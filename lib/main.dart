@@ -42,6 +42,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
   // 🔊 Audio
   late final AudioPlayer _player;
   late final AudioPlayer _winPlayer;
+  bool _isPlayingSound = false;
   static const String _moveSound = 'sounds/tile_tick.wav';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
   static const String _winSound = 'sounds/game_win_fanfare.wav';
@@ -123,10 +124,19 @@ class _PuzzleGameState extends State<PuzzleGame> {
   }
 
   Future<void> _playSound(String asset) async {
+    if (_isPlayingSound) return; // Skip if already playing
+    
     try {
+      _isPlayingSound = true;
       await _player.stop();
       await _player.play(AssetSource(asset));
+      
+      // Reset flag after a short delay
+      Future.delayed(const Duration(milliseconds: 50), () {
+        _isPlayingSound = false;
+      });
     } catch (e) {
+      _isPlayingSound = false;
       debugPrint('Audio error: $e');
     }
   }
