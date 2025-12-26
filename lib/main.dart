@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:confetti/confetti.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,9 +41,13 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
   // 🔊 Audio
   late final AudioPlayer _player;
-  static const String _moveSound = 'sounds/tile_slide_physical.wav';
+  late final AudioPlayer _winPlayer;
+  static const String _moveSound = 'sounds/tile_tick.wav';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
   static const String _winSound = 'sounds/game_win_fanfare.wav';
+
+  // 🎉 Confetti
+  late ConfettiController _confettiController;
 
   // All acceptable solved layouts (0 = empty)
   static const List<List<int>> _goalBoards = [
@@ -94,6 +99,14 @@ class _PuzzleGameState extends State<PuzzleGame> {
     _player.setReleaseMode(ReleaseMode.stop);
     _player.setVolume(1.0);
 
+    // Separate player for win sound
+    _winPlayer = AudioPlayer();
+    _winPlayer.setReleaseMode(ReleaseMode.stop);
+    _winPlayer.setVolume(1.0);
+
+    // Confetti init
+    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+
     _initializeSolvedBoard(_goalBoards.first);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -104,6 +117,8 @@ class _PuzzleGameState extends State<PuzzleGame> {
   @override
   void dispose() {
     _player.dispose();
+    _winPlayer.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -202,23 +217,74 @@ class _PuzzleGameState extends State<PuzzleGame> {
   }
 
   void _handleWin() async {
-    await _playSound(_winSound);
+    _confettiController.play();
+    try {
+      await _winPlayer.play(AssetSource(_winSound));
+    } catch (e) {
+      debugPrint('Win audio error: $e');
+    }
     _showWinDialog();
   }
 
   void _showWinDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Congratulations!'),
-        content: Text('You solved the puzzle in $moves moves!'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _shufflePuzzle();
-            },
-            child: const Text('Play Again'),
+      barrierDismissible: false,
+      builder: (context) => Stack(
+        alignment: Alignment.center,
+        children: [
+          AlertDialog(
+            title: const Text(
+              '🎉 Congratulations! 🎉',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 16),
+                Text(
+                  'You solved the puzzle!',
+                  style: const TextStyle(fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Moves: $moves',
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _confettiController.stop();
+                  Navigator.of(context).pop();
+                  _shufflePuzzle();
+                },
+                child: const Text('Play Again', style: TextStyle(fontSize: 18)),
+              ),
+            ],
+          ),
+          ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirection: -pi / 2,
+            emissionFrequency: 0.05,
+            numberOfParticles: 20,
+            gravity: 0.3,
+            shouldLoop: false,
+            colors: const [
+              Colors.green,
+              Colors.blue,
+              Colors.pink,
+              Colors.orange,
+              Colors.purple,
+              Colors.yellow,
+            ],
           ),
         ],
       ),
