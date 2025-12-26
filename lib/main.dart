@@ -1,0 +1,324 @@
+import 'package:flutter/material.dart';
+import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: '15 Puzzle',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: const PuzzleGame(),
+    );
+  }
+}
+
+class PuzzleGame extends StatefulWidget {
+  const PuzzleGame({super.key});
+
+  @override
+  State<PuzzleGame> createState() => _PuzzleGameState();
+}
+
+class _PuzzleGameState extends State<PuzzleGame> {
+  List<int> tiles = [];
+  int emptyIndex = 15;
+  int moves = 0;
+
+  static const double boardSize = 520;
+  bool _isShuffling = false;
+
+  // 🔊 Audio
+  late final AudioPlayer _player;
+  static const String _moveSound = 'sounds/tile_slide_physical.wav';
+  static const String _newGameSound = 'sounds/new_game_chime.wav';
+  static const String _winSound = 'sounds/game_win_fanfare.wav';
+
+  // All acceptable solved layouts (0 = empty)
+  static const List<List<int>> _goalBoards = [
+    [
+      1, 2, 3, 4,
+      5, 6, 7, 8,
+      9, 10, 11, 12,
+      13, 14, 15, 0,
+    ],
+    [
+      15, 14, 13, 12,
+      11, 10, 9, 8,
+      7, 6, 5, 4,
+      3, 2, 1, 0,
+    ],
+    [
+      1, 5, 9, 13,
+      2, 6, 10, 14,
+      3, 7, 11, 15,
+      4, 8, 12, 0,
+    ],
+    [
+      1, 3, 2, 4,
+      5, 7, 6, 8,
+      9, 11, 10, 12,
+      13, 15, 14, 0,
+    ],
+    [
+      1, 9, 2, 10,
+      3, 11, 4, 12,
+      5, 13, 6, 14,
+      7, 15, 8, 0,
+    ],
+    [
+      1, 4, 5, 8,
+      2, 3, 6, 7,
+      9, 10, 13, 14,
+      0, 11, 12, 15,
+    ],
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Audio setup for short SFX
+    _player = AudioPlayer();
+    _player.setPlayerMode(PlayerMode.lowLatency);
+    _player.setReleaseMode(ReleaseMode.stop);
+    _player.setVolume(1.0);
+
+    _initializeSolvedBoard(_goalBoards.first);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _shufflePuzzle(playSound: false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  Future<void> _playSound(String asset) async {
+    try {
+      await _player.stop();
+      await _player.play(AssetSource(asset));
+    } catch (e) {
+      debugPrint('Audio error: $e');
+    }
+  }
+
+  void _initializeSolvedBoard(List<int> goal) {
+    tiles = List<int>.from(goal);
+    emptyIndex = tiles.indexOf(0);
+    moves = 0;
+  }
+
+  void _shufflePuzzle({bool playSound = true}) {
+    final random = Random();
+    _isShuffling = true;
+
+    if (playSound) {
+      _playSound(_newGameSound);
+    }
+
+    final startGoal = _goalBoards[random.nextInt(_goalBoards.length)];
+    _initializeSolvedBoard(startGoal);
+
+    for (int i = 0; i < 250; i++) {
+      final validMoves = _getValidMoves();
+      if (validMoves.isNotEmpty) {
+        final move = validMoves[random.nextInt(validMoves.length)];
+        _moveTile(
+          move,
+          countMove: false,
+          checkSolved: false,
+          playSound: false,
+        );
+      }
+    }
+
+    setState(() => moves = 0);
+    _isShuffling = false;
+  }
+
+  List<int> _getValidMoves() {
+    final row = emptyIndex ~/ 4;
+    final col = emptyIndex % 4;
+    final moves = <int>[];
+
+    if (row > 0) moves.add(emptyIndex - 4);
+    if (row < 3) moves.add(emptyIndex + 4);
+    if (col > 0) moves.add(emptyIndex - 1);
+    if (col < 3) moves.add(emptyIndex + 1);
+
+    return moves;
+  }
+
+  void _moveTile(
+    int index, {
+    bool countMove = true,
+    bool checkSolved = true,
+    bool playSound = true,
+  }) {
+    if (_getValidMoves().contains(index)) {
+      setState(() {
+        tiles[emptyIndex] = tiles[index];
+        tiles[index] = 0;
+        emptyIndex = index;
+        if (countMove) moves++;
+      });
+
+      if (playSound && !_isShuffling) {
+        _playSound(_moveSound);
+      }
+
+      if (checkSolved && !_isShuffling && _isSolvedAnyWay()) {
+        _handleWin();
+      }
+    }
+  }
+
+  bool _isSolvedAnyWay() {
+    for (final goal in _goalBoards) {
+      bool match = true;
+      for (int i = 0; i < 16; i++) {
+        if (tiles[i] != goal[i]) {
+          match = false;
+          break;
+        }
+      }
+      if (match) return true;
+    }
+    return false;
+  }
+
+  void _handleWin() async {
+    await _playSound(_winSound);
+    _showWinDialog();
+  }
+
+  void _showWinDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Congratulations!'),
+        content: Text('You solved the puzzle in $moves moves!'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _shufflePuzzle();
+            },
+            child: const Text('Play Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('15 Puzzle'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Moves: $moves',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox.square(
+                dimension: boardSize,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 4,
+                      mainAxisSpacing: 4,
+                    ),
+                    itemCount: 16,
+                    itemBuilder: (context, index) => _buildTile(index),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isShuffling ? null : _shufflePuzzle,
+                child: const Text('New Game'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTile(int index) {
+    final tileNumber = tiles[index];
+
+    if (tileNumber == 0) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(8),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _moveTile(index),
+      child: Container(
+        decoration: BoxDecoration(
+          color: tileNumber.isOdd ? Colors.green[200] : Colors.blue[500],
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 4,
+              offset: const Offset(2, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '$tileNumber',
+              style: const TextStyle(
+                fontSize: 999,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
