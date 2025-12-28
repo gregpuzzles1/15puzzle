@@ -4,7 +4,7 @@ A Flutter implementation of the classic 15 puzzle sliding tile game.
 
 ## Demo
 
-![15 Puzzle Game Demo](output.gif)
+![15 Puzzle Game Demo](assets/output.gif)
 
 ## About the Game
 
