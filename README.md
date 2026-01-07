@@ -1,4 +1,4 @@
-# 15 Puzzle Game
+# 15 Puzzle Games
 
 A Flutter implementation of the classic 15 puzzle sliding tile game.
 
