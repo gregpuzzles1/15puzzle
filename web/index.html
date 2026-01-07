@@ -29,10 +29,86 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>puzzle_15</title>
+  <title>15 Puzzle</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Loading spinner styles */
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      z-index: 9999;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #2196F3;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .error-message h1 {
+      color: #d32f2f;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .error-message p {
+      color: #666;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+  </style>
 </head>
 <body>
+  <!-- Loading spinner -->
+  <div id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- No JavaScript fallback -->
+  <noscript>
+    <div class="error-message">
+      <h1>JavaScript Required</h1>
+      <p>This game requires JavaScript to run. Please enable JavaScript in your browser settings and reload the page.</p>
+    </div>
+  </noscript>
+
+  <!-- Browser compatibility check -->
+  <script>
+    // Check for modern browser features
+    if (typeof Promise === 'undefined' || 
+        typeof fetch === 'undefined' || 
+        typeof Symbol === 'undefined') {
+      // Unsupported browser
+      document.body.innerHTML = `
+        <div class="error-message">
+          <h1>Unsupported Browser</h1>
+          <p>This game requires a modern web browser. Please update your browser or use Chrome, Firefox, Safari, or Edge (released within the last 2 years).</p>
+        </div>
+      `;
+    }
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

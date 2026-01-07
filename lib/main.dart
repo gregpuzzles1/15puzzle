@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:confetti/confetti.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 void main() {
   runApp(const MyApp());
@@ -111,6 +114,13 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _shufflePuzzle(playSound: false);
+      
+      // Remove loading spinner after first frame (web only)
+      try {
+        html.document.querySelector('#loading')?.remove();
+      } catch (e) {
+        // Silently fail on non-web platforms
+      }
     });
   }
 
