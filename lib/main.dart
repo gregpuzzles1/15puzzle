@@ -36,7 +36,6 @@ class _PuzzleGameState extends State<PuzzleGame> {
   int emptyIndex = 15;
   int moves = 0;
 
-  static const double boardSize = 520;
   bool _isShuffling = false;
 
   // 🔊 Audio
@@ -121,6 +120,35 @@ class _PuzzleGameState extends State<PuzzleGame> {
     _winPlayer.dispose();
     _confettiController.dispose();
     super.dispose();
+  }
+
+  /// Calculate optimal board size based on viewport dimensions
+  /// - Desktop (≥1024px): min(520, available)
+  /// - Tablet (768-1023px): min(480, available)
+  /// - Mobile (<768px): min(available, 340), ensure tiles ≥44px
+  double getBoardSize(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+    
+    // Calculate available space (90% of smaller dimension, minus padding)
+    final available = (width < height ? width : height) * 0.9 - 48;
+    
+    // Minimum board size for 44px tiles accounting for GridView layout:
+    // (44px tile * 4) + (4px spacing * 3 gaps) + (4px padding * 2 sides) = 196px
+    const minBoardSize = 196.0;
+    
+    if (width >= 1024) {
+      // Desktop: prefer 520px, but adapt if screen is smaller
+      return available < 520 ? (available < minBoardSize ? minBoardSize : available) : 520;
+    } else if (width >= 768) {
+      // Tablet: prefer 480px, but adapt if screen is smaller
+      return available < 480 ? (available < minBoardSize ? minBoardSize : available) : 480;
+    } else {
+      // Mobile: use available space, max 340px, min 196px for touch targets
+      if (available < minBoardSize) return minBoardSize;
+      return available > 340 ? 340 : available;
+    }
   }
 
   Future<void> _playSound(String asset) async {
@@ -327,7 +355,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox.square(
-                dimension: boardSize,
+                dimension: getBoardSize(context),
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: GridView.builder(
