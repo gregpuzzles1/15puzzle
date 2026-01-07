@@ -10,7 +10,7 @@ The game is deployed and playable online at: https://gregpuzzles1.github.io/15pu
 
 ## Demo
 
-![15 Puzzle Game Demo](output.gif)
+![15 Puzzle Game Demo](/assets/output.gif)
 
 ## About the Game
 
@@ -26,6 +26,14 @@ The 15 puzzle is a sliding puzzle with 15 numbered tiles in a 4×4 grid with one
 - **Responsive Design**: Adapts seamlessly to desktop (≥1024px), tablet (768-1023px), and mobile (<768px) screens
 - **Web Platform**: Playable in modern web browsers with loading screen and fallback support
 - **Cross-Platform**: Runs on Android, iOS, Windows, macOS, Linux, and Web
+
+## How to Play
+
+- The puzzle starts in a shuffled state with tiles numbered 1–15  
+- Tap any tile adjacent to the empty space to slide it  
+- Continue sliding tiles until they are arranged in order from 1–15  
+- The puzzle is solved when all tiles are in numerical order with the empty space in the bottom-right corner  
+- Click **"New Game"** to start over with a new shuffle  
 
 ## Getting Started
 
@@ -43,4 +51,3 @@ The 15 puzzle is a sliding puzzle with 15 numbered tiles in a 4×4 grid with one
 ```bash
 flutter pub get
 flutter run
-
