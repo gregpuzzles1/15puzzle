@@ -64656,24 +64656,34 @@ A.ahZ(s,"canplaythrough",new A.a3C(s),!1)
 s.load()
 r.m(0,a,s)
 return s},
-Lr(a){var s,r,q,p,o,n,m=this
-try{if(a==="sounds/tile_slide_tick.mp3"&&m.d.length!==0){p=m.d
-o=m.e
-s=p[o]
-m.e=(o+1)%p.length
+Lr(a){var s,r,q,p,o,n,m,l,k,j,i,h=this
+try{if(a==="sounds/tile_slide_tick.mp3"&&h.d.length!==0){p=window.navigator.userAgent
+p.toString
+o=B.d.q(p,"AppleWebKit")
+n=B.d.q(p,"Safari")
+m=B.d.q(p,"Chrome")||B.d.q(p,"CriOS")
+l=B.d.q(p,"Firefox")||B.d.q(p,"FxiOS")
+k=B.d.q(p,"Edg")||B.d.q(p,"EdgiOS")
+p=!1
+if(o)if(n)p=!(m||l||k)
+if(p)return
+p=h.d
+j=h.e
+s=p[j]
+h.e=(j+1)%p.length
 s.volume=1
 s.playbackRate=1.2
-try{s.currentTime=0}catch(n){}p=s.play()
+try{s.currentTime=0}catch(i){}p=s.play()
 p.toString
 A.ff(p,t.z)
-return}r=m.E9(a)
+return}r=h.E9(a)
 J.amW(r)
 r.volume=1
 r.currentTime=0
 p=r.play()
 p.toString
 A.ff(p,t.z)
-m.b=r}catch(n){q=A.az(n)
+h.b=r}catch(i){q=A.az(i)
 A.nm().$1("\u274c Web exception: "+A.m(q))}},
 l(){var s,r,q,p,o=this.b
 if(o!=null)o.pause()
