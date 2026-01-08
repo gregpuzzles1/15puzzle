@@ -1,17 +1,27 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
 
-// Web-specific audio implementation using HTML5 Audio API
-// This provides better Safari/iOS compatibility than audioplayers
+// Web-specific audio implementation.
+// Safari/iOS has noticeable latency when repeatedly restarting the same
+// HTMLAudioElement. To reduce this for the tile-tick sound we keep a small pool
+// of preloaded elements and round-robin them.
 import 'dart:html' as html;
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'audio_manager.dart';
 
 AudioManager createAudioManager() => WebAudioManager();
 
 class WebAudioManager implements AudioManager {
+  // HTMLAudioElement cache for non-tick sounds
   final Map<String, html.AudioElement> _audioCache = {};
   html.AudioElement? _currentSound;
   bool _initialized = false;
+
+  static const String _tickSoundAsset = 'sounds/tile_tick.wav';
+  static const int _tickPoolSize = 6;
+  static const double _tickPlaybackRate = 1.2;
+  final List<html.AudioElement> _tickPool = <html.AudioElement>[];
+  int _tickPoolIndex = 0;
   
   // Preload these sounds during initialization
   static const _soundsToPreload = [
@@ -26,11 +36,30 @@ class WebAudioManager implements AudioManager {
     _initialized = true;
     
     debugPrint('Web audio manager ready');
-    
-    // Preload all sound files
+
+    // Pre-create a small pool for the tick sound (reduces Safari latency).
+    for (int i = 0; i < _tickPoolSize; i++) {
+      _tickPool.add(_createAudio(_tickSoundAsset, playbackRate: _tickPlaybackRate));
+    }
+
+    // Preload all other sounds using the shared cache.
     for (final sound in _soundsToPreload) {
+      if (sound == _tickSoundAsset) continue;
       _getOrCreateAudio(sound);
     }
+  }
+
+  html.AudioElement _createAudio(String assetPath, {double? playbackRate}) {
+    final audio = html.AudioElement();
+    audio.src = Uri.base.resolve('assets/assets/$assetPath').toString();
+    audio.preload = 'auto';
+    audio.volume = 1.0;
+    if (playbackRate != null) {
+      // Supported by Safari/iOS; safe to set in other browsers too.
+      audio.playbackRate = playbackRate;
+    }
+    audio.load();
+    return audio;
   }
 
   html.AudioElement _getOrCreateAudio(String assetPath) {
@@ -65,23 +94,25 @@ class WebAudioManager implements AudioManager {
   @override
   void playSound(String assetPath) {
     try {
-      // Get or create audio element
+      if (assetPath == _tickSoundAsset && _tickPool.isNotEmpty) {
+        final audio = _tickPool[_tickPoolIndex];
+        _tickPoolIndex = (_tickPoolIndex + 1) % _tickPool.length;
+        audio.volume = 1.0;
+        audio.playbackRate = _tickPlaybackRate;
+        try {
+          audio.currentTime = 0;
+        } catch (_) {
+          // Ignore if not seekable yet; still try to play.
+        }
+        unawaited(audio.play());
+        return;
+      }
+
       final audio = _getOrCreateAudio(assetPath);
-      
-      // Stop and reset
       audio.pause();
-      audio.currentTime = 0;
       audio.volume = 1.0;
-      
-      debugPrint('🔊 Web: Attempting to play: assets/$assetPath');
-      
-      // Play synchronously (critical for Safari)
-      audio.play().then((_) {
-        debugPrint('✅ Web: Playing audio');
-      }).catchError((e) {
-        debugPrint('❌ Web audio error: $e');
-      });
-      
+      audio.currentTime = 0;
+      unawaited(audio.play());
       _currentSound = audio;
     } catch (e) {
       debugPrint('❌ Web exception: $e');
@@ -90,24 +121,20 @@ class WebAudioManager implements AudioManager {
 
   @override
   void playWinSound(String assetPath) {
-    try {
-      final audio = _getOrCreateAudio(assetPath);
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = 1.0;
-      
-      debugPrint('🎉 Web: Playing win sound');
-      audio.play().catchError((e) {
-        debugPrint('❌ Win audio error: $e');
-      });
-    } catch (e) {
-      debugPrint('❌ Win exception: $e');
-    }
+    // Win sound is less latency-sensitive; reuse cached element.
+    playSound(assetPath);
   }
 
   @override
   void dispose() {
     _currentSound?.pause();
+
+    for (final audio in _tickPool) {
+      audio.pause();
+      audio.src = '';
+    }
+    _tickPool.clear();
+
     for (final audio in _audioCache.values) {
       audio.pause();
       audio.src = '';

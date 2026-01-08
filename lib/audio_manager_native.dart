@@ -9,9 +9,10 @@ import 'audio_manager.dart';
 AudioManager createAudioManager() => NativeAudioManager();
 
 class NativeAudioManager implements AudioManager {
-  // Keep a dedicated low-latency player for the move tick sound to minimize
-  // iOS latency/jank.
-  late final AudioPlayer _tickPlayer;
+  // Keep dedicated low-latency players for the move tick sound.
+  // On iOS, using a small pool helps avoid latency when moves happen rapidly.
+  late final List<AudioPlayer> _tickPlayers;
+  int _tickPlayerIndex = 0;
 
   // General-purpose SFX player (new game, etc.)
   late final AudioPlayer _sfxPlayer;
@@ -25,25 +26,30 @@ class NativeAudioManager implements AudioManager {
   Future<void> initialize() async {
     // Assign fields synchronously first so dispose() is safe even if
     // initialization is still in-flight (common in widget tests).
-    _tickPlayer = AudioPlayer();
+    _tickPlayers = List<AudioPlayer>.generate(
+      Platform.isIOS ? 4 : 1,
+      (_) => AudioPlayer(),
+    );
     _sfxPlayer = AudioPlayer();
     _winPlayer = AudioPlayer();
 
-    await _tickPlayer.setPlayerMode(PlayerMode.lowLatency);
-    await _tickPlayer.setReleaseMode(ReleaseMode.stop);
-    await _tickPlayer.setVolume(1.0);
+    for (final player in _tickPlayers) {
+      await player.setPlayerMode(PlayerMode.lowLatency);
+      await player.setReleaseMode(ReleaseMode.stop);
+      await player.setVolume(1.0);
 
-    // Preload tick sound to reduce first-play and per-play latency.
-    await _tickPlayer.setSource(AssetSource(_tickSoundAsset));
-    await _tickPlayer.seek(Duration.zero);
+      // Preload tick sound to reduce first-play and per-play latency.
+      await player.setSource(AssetSource(_tickSoundAsset));
+      await player.seek(Duration.zero);
 
-    if (Platform.isIOS) {
-      // Make the move tick a bit shorter/snappier on iOS.
-      // Not all platforms support playback rate, so ignore failures.
-      try {
-        await _tickPlayer.setPlaybackRate(_iosTickPlaybackRate);
-      } catch (_) {
-        // no-op
+      if (Platform.isIOS) {
+        // Make the move tick a bit shorter/snappier on iOS.
+        // Not all platforms support playback rate, so ignore failures.
+        try {
+          await player.setPlaybackRate(_iosTickPlaybackRate);
+        } catch (_) {
+          // no-op
+        }
       }
     }
 
@@ -63,8 +69,10 @@ class NativeAudioManager implements AudioManager {
       // Fast path: avoid stop+play overhead; just rewind and resume.
       unawaited(() async {
         try {
-          await _tickPlayer.seek(Duration.zero);
-          await _tickPlayer.resume();
+          final player = _tickPlayers[_tickPlayerIndex];
+          _tickPlayerIndex = (_tickPlayerIndex + 1) % _tickPlayers.length;
+          await player.seek(Duration.zero);
+          await player.resume();
         } catch (e) {
           debugPrint('Tick audio error: $e');
         }
@@ -97,7 +105,9 @@ class NativeAudioManager implements AudioManager {
 
   @override
   void dispose() {
-    _tickPlayer.dispose();
+    for (final player in _tickPlayers) {
+      player.dispose();
+    }
     _sfxPlayer.dispose();
     _winPlayer.dispose();
   }
