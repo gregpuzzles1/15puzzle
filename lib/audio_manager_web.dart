@@ -11,6 +11,13 @@ class WebAudioManager implements AudioManager {
   final Map<String, html.AudioElement> _audioCache = {};
   html.AudioElement? _currentSound;
   bool _initialized = false;
+  
+  // Preload these sounds during initialization
+  static const _soundsToPreload = [
+    'sounds/tile_tick.wav',
+    'sounds/new_game_chime.wav',
+    'sounds/game_win_fanfare.wav',
+  ];
 
   @override
   Future<void> initialize() async {
@@ -24,6 +31,11 @@ class WebAudioManager implements AudioManager {
       audio.volume = 0.0;
       await audio.play();
       audio.pause();
+      
+      // Preload all sound files
+      for (final sound in _soundsToPreload) {
+        _getOrCreateAudio(sound);
+      }
       
       _initialized = true;
       debugPrint('Web audio initialized successfully');
@@ -41,6 +53,15 @@ class WebAudioManager implements AudioManager {
     final audio = html.AudioElement();
     audio.src = 'assets/$assetPath';
     audio.preload = 'auto';
+    
+    // Add error handling
+    audio.onError.listen((event) {
+      debugPrint('Failed to load audio: assets/$assetPath');
+    });
+    
+    audio.onCanPlayThrough.listen((event) {
+      debugPrint('Audio loaded successfully: assets/$assetPath');
+    });
     
     // Load the audio file
     audio.load();
@@ -66,14 +87,21 @@ class WebAudioManager implements AudioManager {
       audio.currentTime = 0;
       audio.volume = 1.0;
       
+      debugPrint('🔊 Web: Attempting to play: assets/$assetPath');
+      
       // Play synchronously (critical for Safari)
-      audio.play()?.catchError((e) {
-        debugPrint('Audio play error: $e');
-      });
+      final playPromise = audio.play();
+      if (playPromise != null) {
+        playPromise.then((_) {
+          debugPrint('✅ Web: Successfully playing audio');
+        }).catchError((e) {
+          debugPrint('❌ Web audio play error: $e');
+        });
+      }
       
       _currentSound = audio;
     } catch (e) {
-      debugPrint('Audio error: $e');
+      debugPrint('❌ Web audio error: $e');
     }
   }
 

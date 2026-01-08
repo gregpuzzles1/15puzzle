@@ -368,9 +368,22 @@ class _PuzzleGameState extends State<PuzzleGame> {
                 ),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isShuffling ? null : _shufflePuzzle,
-                child: const Text('New Game'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: _isShuffling ? null : _shufflePuzzle,
+                    child: const Text('New Game'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      debugPrint('🧪 Test button clicked');
+                      _playSound(_moveSound);
+                    },
+                    child: const Text('Test Sound'),
+                  ),
+                ],
               ),
             ],
           ),
