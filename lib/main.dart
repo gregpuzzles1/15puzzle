@@ -43,7 +43,6 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
   // 🔊 Audio
   late final AudioManager _audioManager;
-  bool _audioInitialized = false;
   static const String _moveSound = 'sounds/tile_tick.wav';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
   static const String _winSound = 'sounds/game_win_fanfare.wav';
@@ -148,19 +147,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
     }
   }
 
-  /// Initialize audio on first user interaction (required for iOS/Safari)
-  void _initializeAudio() {
-    if (_audioInitialized) return;
-    _audioInitialized = true;
-    // For web, this will be called on first tap to unlock audio
-  }
-
   void _playSound(String asset) {
-    // Mark as initialized on first play (for web audio unlock)
-    if (!_audioInitialized) {
-      _initializeAudio();
-    }
-    
     debugPrint('🔊 Playing sound: $asset');
     _audioManager.playSound(asset);
   }
@@ -219,11 +206,6 @@ class _PuzzleGameState extends State<PuzzleGame> {
     bool playSound = true,
   }) {
     if (_getValidMoves().contains(index)) {
-      // Initialize audio on first tap (iOS/Safari requirement)
-      if (!_audioInitialized) {
-        _initializeAudio();
-      }
-      
       setState(() {
         tiles[emptyIndex] = tiles[index];
         tiles[index] = 0;

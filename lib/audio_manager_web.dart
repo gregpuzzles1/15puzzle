@@ -22,26 +22,13 @@ class WebAudioManager implements AudioManager {
   @override
   Future<void> initialize() async {
     if (_initialized) return;
+    _initialized = true;
     
-    try {
-      // Preload and unlock audio on first user interaction
-      // Safari requires this to happen synchronously in a user gesture
-      final audio = html.AudioElement();
-      audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-      audio.volume = 0.0;
-      await audio.play();
-      audio.pause();
-      
-      // Preload all sound files
-      for (final sound in _soundsToPreload) {
-        _getOrCreateAudio(sound);
-      }
-      
-      _initialized = true;
-      debugPrint('Web audio initialized successfully');
-    } catch (e) {
-      debugPrint('Web audio initialization: $e');
-      _initialized = true; // Continue anyway
+    debugPrint('Web audio manager ready');
+    
+    // Preload all sound files
+    for (final sound in _soundsToPreload) {
+      _getOrCreateAudio(sound);
     }
   }
 
@@ -72,18 +59,12 @@ class WebAudioManager implements AudioManager {
 
   @override
   void playSound(String assetPath) {
-    // Auto-initialize on first play for Safari/iOS
-    if (!_initialized) {
-      initialize();
-    }
-    
     try {
-      // Stop current sound if playing
-      _currentSound?.pause();
-      _currentSound?.currentTime = 0;
-      
       // Get or create audio element
       final audio = _getOrCreateAudio(assetPath);
+      
+      // Stop and reset
+      audio.pause();
       audio.currentTime = 0;
       audio.volume = 1.0;
       
@@ -93,35 +74,32 @@ class WebAudioManager implements AudioManager {
       final playPromise = audio.play();
       if (playPromise != null) {
         playPromise.then((_) {
-          debugPrint('✅ Web: Successfully playing audio');
+          debugPrint('✅ Web: Playing audio');
         }).catchError((e) {
-          debugPrint('❌ Web audio play error: $e');
+          debugPrint('❌ Web audio error: $e');
         });
       }
       
       _currentSound = audio;
     } catch (e) {
-      debugPrint('❌ Web audio error: $e');
+      debugPrint('❌ Web exception: $e');
     }
   }
 
   @override
   void playWinSound(String assetPath) {
-    // Auto-initialize on first play for Safari/iOS
-    if (!_initialized) {
-      initialize();
-    }
-    
     try {
       final audio = _getOrCreateAudio(assetPath);
+      audio.pause();
       audio.currentTime = 0;
       audio.volume = 1.0;
       
+      debugPrint('🎉 Web: Playing win sound');
       audio.play()?.catchError((e) {
-        debugPrint('Win audio play error: $e');
+        debugPrint('❌ Win audio error: $e');
       });
     } catch (e) {
-      debugPrint('Win audio error: $e');
+      debugPrint('❌ Win exception: $e');
     }
   }
 
