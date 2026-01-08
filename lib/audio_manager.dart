@@ -1,4 +1,4 @@
-/// Abstract audio manager interface
+// Abstract audio manager interface
 import 'audio_manager_stub.dart'
     if (dart.library.html) 'audio_manager_web.dart'
     if (dart.library.io) 'audio_manager_native.dart';

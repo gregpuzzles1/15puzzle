@@ -1,6 +1,7 @@
-/// Web-specific audio implementation using HTML5 Audio API
-/// This provides better Safari/iOS compatibility than audioplayers
-// ignore: avoid_web_libraries_in_flutter
+// ignore_for_file: avoid_web_libraries_in_flutter
+
+// Web-specific audio implementation using HTML5 Audio API
+// This provides better Safari/iOS compatibility than audioplayers
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'audio_manager.dart';
