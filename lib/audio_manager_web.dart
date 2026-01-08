@@ -38,16 +38,20 @@ class WebAudioManager implements AudioManager {
     }
     
     final audio = html.AudioElement();
-    audio.src = 'assets/$assetPath';
+    // Flutter web serves bundled assets under `assets/` and preserves the
+    // original asset key path. Since our asset keys are `assets/sounds/...`
+    // and we pass in `sounds/...`, the correct URL is:
+    //   <base-href>/assets/assets/sounds/...
+    audio.src = Uri.base.resolve('assets/assets/$assetPath').toString();
     audio.preload = 'auto';
     
     // Add error handling
     audio.onError.listen((event) {
-      debugPrint('Failed to load audio: assets/$assetPath');
+      debugPrint('Failed to load audio: ${audio.src}');
     });
     
     audio.onCanPlayThrough.listen((event) {
-      debugPrint('Audio loaded successfully: assets/$assetPath');
+      debugPrint('Audio loaded successfully: ${audio.src}');
     });
     
     // Load the audio file
@@ -71,14 +75,11 @@ class WebAudioManager implements AudioManager {
       debugPrint('🔊 Web: Attempting to play: assets/$assetPath');
       
       // Play synchronously (critical for Safari)
-      final playPromise = audio.play();
-      if (playPromise != null) {
-        playPromise.then((_) {
-          debugPrint('✅ Web: Playing audio');
-        }).catchError((e) {
-          debugPrint('❌ Web audio error: $e');
-        });
-      }
+      audio.play().then((_) {
+        debugPrint('✅ Web: Playing audio');
+      }).catchError((e) {
+        debugPrint('❌ Web audio error: $e');
+      });
       
       _currentSound = audio;
     } catch (e) {
@@ -95,7 +96,7 @@ class WebAudioManager implements AudioManager {
       audio.volume = 1.0;
       
       debugPrint('🎉 Web: Playing win sound');
-      audio.play()?.catchError((e) {
+      audio.play().catchError((e) {
         debugPrint('❌ Win audio error: $e');
       });
     } catch (e) {

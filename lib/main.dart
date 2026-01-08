@@ -43,6 +43,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
   // 🔊 Audio
   late final AudioManager _audioManager;
+  late final Future<void> _audioInitFuture;
   static const String _moveSound = 'sounds/tile_tick.wav';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
   static const String _winSound = 'sounds/game_win_fanfare.wav';
@@ -96,7 +97,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
     // Audio setup
     _audioManager = AudioManager();
-    _audioManager.initialize();
+    _audioInitFuture = _audioManager.initialize();
 
     // Confetti init
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
@@ -147,8 +148,9 @@ class _PuzzleGameState extends State<PuzzleGame> {
     }
   }
 
-  void _playSound(String asset) {
+  Future<void> _playSound(String asset) async {
     debugPrint('🔊 Playing sound: $asset');
+    await _audioInitFuture;
     _audioManager.playSound(asset);
   }
 
@@ -239,7 +241,9 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
   void _handleWin() {
     _confettiController.play();
-    _audioManager.playWinSound(_winSound);
+    _audioInitFuture.then((_) {
+      _audioManager.playWinSound(_winSound);
+    });
     _showWinDialog();
   }
 
