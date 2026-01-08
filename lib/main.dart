@@ -44,7 +44,6 @@ class _PuzzleGameState extends State<PuzzleGame> {
   // 🔊 Audio
   late final AudioManager _audioManager;
   bool _audioReady = false;
-  static const String _moveSound = 'sounds/tile_tick.wav';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
   static const String _winSound = 'sounds/game_win_fanfare.wav';
 
@@ -225,9 +224,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
         if (countMove) moves++;
       });
 
-      if (playSound && !_isShuffling) {
-        _playSound(_moveSound);
-      }
+      // Tile move/tick sound intentionally disabled (all platforms).
 
       if (checkSolved && !_isShuffling && _isSolvedAnyWay()) {
         _handleWin();
@@ -382,7 +379,6 @@ class _PuzzleGameState extends State<PuzzleGame> {
   Widget _buildTile(int index) {
     final tileNumber = tiles[index];
     final isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
-    final isWebNonSafari = kIsWeb && !isSafariBrowser();
 
     if (tileNumber == 0) {
       return Container(
@@ -399,14 +395,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
       onTap: isIOS
           ? null
           : () {
-              // Chromium browsers can be strict about allowing audio only
-              // during a click/tap callback. Play the tick here on web.
-              if (isWebNonSafari && _getValidMoves().contains(index)) {
-                _playSound(_moveSound);
-              }
-
-              // For web non-Safari we already played the tick above.
-              _moveTile(index, playSound: !isWebNonSafari);
+              _moveTile(index);
             },
       onTapDown: isIOS ? (_) => _moveTile(index) : null,
       child: Container(
