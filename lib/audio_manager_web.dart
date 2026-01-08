@@ -17,8 +17,8 @@ class WebAudioManager implements AudioManager {
   html.AudioElement? _currentSound;
   bool _initialized = false;
 
-  static const String _tickSoundAssetMp3 = 'sounds/tile_slide_tick.mp3';
   static const String _tickSoundAssetWav = 'sounds/tile_tick.wav';
+  static const String _tickSoundAssetMp3 = 'sounds/tile_slide_tick.mp3';
   static const int _tickPoolSize = 6;
   static const double _tickPlaybackRate = 1.2;
   final List<html.AudioElement> _tickPoolMp3 = <html.AudioElement>[];
@@ -47,8 +47,8 @@ class WebAudioManager implements AudioManager {
   
   // Preload these sounds during initialization
   static const _soundsToPreload = [
-    'sounds/tile_slide_tick.mp3',
     'sounds/tile_tick.wav',
+    'sounds/tile_slide_tick.mp3',
     'sounds/new_game_chime.wav',
     'sounds/game_win_fanfare.wav',
   ];
@@ -125,11 +125,17 @@ class WebAudioManager implements AudioManager {
   @override
   void playSound(String assetPath) {
     try {
-      if (assetPath == _tickSoundAssetMp3 && _tickPoolMp3.isNotEmpty) {
+      final isTick =
+          assetPath == _tickSoundAssetWav || assetPath == _tickSoundAssetMp3;
+
+      if (isTick && (_tickPoolWav.isNotEmpty || _tickPoolMp3.isNotEmpty)) {
         // User request: no tile slide sound on Safari.
         if (_isSafari) return;
 
-        final pool = _forceWavTick ? _tickPoolWav : _tickPoolMp3;
+        // Prefer WAV for desktop browsers (especially Chromium).
+        final pool = (_forceWavTick || assetPath == _tickSoundAssetWav)
+            ? _tickPoolWav
+            : _tickPoolMp3;
         if (pool.isEmpty) return;
 
         final audio = pool[_tickPoolIndex];
@@ -143,10 +149,10 @@ class WebAudioManager implements AudioManager {
         }
 
         audio.play().catchError((e) {
-          // If MP3 fails on Chromium, fall back to WAV.
+          // If MP3 fails, fall back to WAV.
           if (!_forceWavTick) {
             _forceWavTick = true;
-            debugPrint('⚠️ Tick MP3 failed; switching to WAV: $e');
+            debugPrint('⚠️ Tick playback failed; switching to WAV: $e');
           }
         });
         return;

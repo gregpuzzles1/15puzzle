@@ -19,7 +19,7 @@ class NativeAudioManager implements AudioManager {
 
   late final AudioPlayer _winPlayer;
 
-  static const String _tickSoundAsset = 'sounds/tile_slide_tick.mp3';
+  static const String _tickSoundAsset = 'sounds/tile_tick.wav';
   static const double _iosTickPlaybackRate = 1.2;
 
   @override
