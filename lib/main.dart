@@ -382,6 +382,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
   Widget _buildTile(int index) {
     final tileNumber = tiles[index];
     final isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+    final isWebNonSafari = kIsWeb && !isSafariBrowser();
 
     if (tileNumber == 0) {
       return Container(
@@ -395,8 +396,19 @@ class _PuzzleGameState extends State<PuzzleGame> {
     return GestureDetector(
       // On iOS, using onTapDown makes the interaction feel snappier
       // (onTap fires on pointer-up).
-      onTap: isIOS ? null : () => _moveTile(index),
-      onTapDown: isIOS ? (_) => _moveTile(index) : null,
+      onTap: isIOS ? null : () => _moveTile(index, playSound: !isWebNonSafari),
+      onTapDown: (details) {
+        if (isIOS) {
+          _moveTile(index);
+          return;
+        }
+
+        // Desktop web browsers often require audio to start from a direct
+        // pointer event. Trigger the tick here and skip it in _moveTile.
+        if (isWebNonSafari && _getValidMoves().contains(index)) {
+          _playSound(_moveSound);
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           color: tileNumber.isOdd ? Colors.green[200] : Colors.blue[500],
