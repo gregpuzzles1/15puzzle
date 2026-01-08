@@ -51,6 +51,11 @@ class WebAudioManager implements AudioManager {
 
   @override
   void playSound(String assetPath) {
+    // Auto-initialize on first play for Safari/iOS
+    if (!_initialized) {
+      initialize();
+    }
+    
     try {
       // Stop current sound if playing
       _currentSound?.pause();
@@ -74,6 +79,11 @@ class WebAudioManager implements AudioManager {
 
   @override
   void playWinSound(String assetPath) {
+    // Auto-initialize on first play for Safari/iOS
+    if (!_initialized) {
+      initialize();
+    }
+    
     try {
       final audio = _getOrCreateAudio(assetPath);
       audio.currentTime = 0;

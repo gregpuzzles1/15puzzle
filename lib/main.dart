@@ -96,6 +96,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
     // Audio setup
     _audioManager = AudioManager();
+    _audioManager.initialize();
 
     // Confetti init
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
@@ -149,17 +150,17 @@ class _PuzzleGameState extends State<PuzzleGame> {
   /// Initialize audio on first user interaction (required for iOS/Safari)
   void _initializeAudio() {
     if (_audioInitialized) return;
-    
-    _audioManager.initialize();
     _audioInitialized = true;
+    // For web, this will be called on first tap to unlock audio
   }
 
   void _playSound(String asset) {
-    // Initialize audio on first play attempt
+    // Mark as initialized on first play (for web audio unlock)
     if (!_audioInitialized) {
       _initializeAudio();
     }
     
+    debugPrint('🔊 Playing sound: $asset');
     _audioManager.playSound(asset);
   }
 
