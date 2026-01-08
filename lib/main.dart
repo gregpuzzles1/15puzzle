@@ -43,7 +43,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
   // 🔊 Audio
   late final AudioManager _audioManager;
-  late final Future<void> _audioInitFuture;
+  bool _audioReady = false;
   static const String _moveSound = 'sounds/tile_slide_tick.mp3';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
   static const String _winSound = 'sounds/game_win_fanfare.wav';
@@ -97,7 +97,11 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
     // Audio setup
     _audioManager = AudioManager();
-    _audioInitFuture = _audioManager.initialize();
+    _audioManager.initialize().then((_) {
+      _audioReady = true;
+    }).catchError((e) {
+      debugPrint('Audio init error: $e');
+    });
 
     // Confetti init
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
@@ -148,10 +152,16 @@ class _PuzzleGameState extends State<PuzzleGame> {
     }
   }
 
-  Future<void> _playSound(String asset) async {
-    debugPrint('🔊 Playing sound: $asset');
-    await _audioInitFuture;
+  void _playSound(String asset) {
+    // Important for desktop browsers: audio playback must be initiated
+    // synchronously from a user gesture (no awaiting).
+    if (!_audioReady) return;
     _audioManager.playSound(asset);
+  }
+
+  void _playWinSound(String asset) {
+    if (!_audioReady) return;
+    _audioManager.playWinSound(asset);
   }
 
   void _initializeSolvedBoard(List<int> goal) {
@@ -241,9 +251,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
   void _handleWin() {
     _confettiController.play();
-    _audioInitFuture.then((_) {
-      _audioManager.playWinSound(_winSound);
-    });
+    _playWinSound(_winSound);
     _showWinDialog();
   }
 
