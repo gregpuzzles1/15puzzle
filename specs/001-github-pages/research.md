@@ -182,6 +182,21 @@ testWidgets('Responsive layout adapts to mobile viewport', (tester) async {
 
 ---
 
+## 8. Audio on Web/iOS: Findings & Decision
+
+### What we learned
+
+- **Autoplay policies are strict on desktop browsers**: Chrome/Edge/Chromium can block sound unless playback begins directly inside a user gesture callback (and can be sensitive to timing).
+- **Safari/iOS latency can be noticeable**: rapid, repeated “tick” SFX can feel delayed on iOS/Safari.
+- **Hosting/MIME quirks can matter**: static hosting (including GitHub Pages) may serve media with non-ideal content-types in some cases; browsers vary in how tolerant they are.
+
+### Decision
+
+- **Tile-move/tick audio is disabled on all platforms** to avoid inconsistent behavior across browsers/devices.
+- **New Game and Win sounds are best-effort**, and must not block gameplay; failures degrade silently.
+
+---
+
 ## 5. GitHub Actions Retry Strategy
 
 ### Decision: Use nick-invision/retry@v2 to wrap deployment step (3 attempts)

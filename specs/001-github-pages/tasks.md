@@ -179,7 +179,7 @@ description: "Task list for GitHub Pages deployment feature"
 - [ ] T074 Manual cross-browser testing: Chrome, Firefox, Safari/Edge on desktop (full game playthrough each)
 - [ ] T075 Manual mobile testing: Chrome DevTools → iPhone SE, Pixel 5, iPad (verify touch targets ≥44px)
 - [ ] T076 Manual performance testing: Slow 3G throttling → verify <5s interactive, spinner visible
-- [ ] T077 Manual audio testing: verify tile sounds, new game chime, win fanfare (may prompt for permission)
+- [ ] T077 Manual audio testing: verify New Game chime + Win fanfare (tile-move sound intentionally disabled)
 - [ ] T078 Manual confetti testing: verify win animation smooth (60fps), acceptable on low-end devices
 - [ ] T079 Edge case validation: extremely small viewport (<320px) → verify game handles gracefully
 - [ ] T080 Edge case validation: refresh mid-game → verify game resets correctly
@@ -188,6 +188,15 @@ description: "Task list for GitHub Pages deployment feature"
 - [ ] T083 Document any known limitations in README.md (audio autoplay policies, confetti performance)
 - [ ] T084 Create GitHub release/tag with version number and deployment notes
 - [ ] T085 Update copilot-instructions.md if any new patterns/conventions emerged during implementation
+
+---
+
+## Addendum: Web Meta/SEO/Analytics Files
+
+- [ ] T087 Add SEO title/description/keywords/viewport in `web/index.html`
+- [ ] T088 Add Google tag (gtag.js) in `web/index.html`
+- [ ] T089 Add `web/sitemap.xml` for `https://gregpuzzles1.github.io/15puzzle/`
+- [ ] T090 Add `web/robots.txt` pointing to sitemap
 
 ---
 

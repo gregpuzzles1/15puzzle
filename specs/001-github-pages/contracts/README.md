@@ -146,7 +146,8 @@ https://gregpuzzles1.github.io/15puzzle/
 │   ├── AssetManifest.json       # Asset registry
 │   ├── FontManifest.json        # Font registry
 │   └── sounds/
-│       ├── tile_tick.wav        # Tile movement sound
+│       ├── tile_tick.wav        # Tile movement sound (present; intentionally not played)
+│       ├── tile_slide_tick.mp3  # Alternate tile movement sound (present; intentionally not played)
 │       ├── new_game_chime.wav   # New game sound
 │       └── game_win_fanfare.wav # Win sound
 └── icons/
@@ -157,17 +158,18 @@ https://gregpuzzles1.github.io/15puzzle/
 
 ### Asset MIME Types
 
-GitHub Pages serves correct MIME types automatically:
+GitHub Pages typically serves correct MIME types automatically, but behavior can vary by file type and browser. Verify audio assets in target browsers and treat audio as best-effort.
 
 ```
 .html -> text/html
 .js   -> application/javascript
 .json -> application/json
 .wav  -> audio/wav
+.mp3  -> audio/mpeg
 .png  -> image/png
 ```
 
-No custom MIME type configuration required.
+If audio behaves inconsistently across browsers, prefer disabling non-essential sounds (like per-move ticks) rather than adding brittle browser-specific workarounds.
 
 ## Loading Screen Contract
 

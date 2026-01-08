@@ -38,7 +38,7 @@ Game MUST maintain 60fps during all interactions including tile sliding, animati
 
 ### III. User Experience
 
-Every user action MUST provide immediate visual and/or audio feedback. Game state MUST be clear at all times (current moves, solvability, win condition). Error states MUST be impossible through UI design rather than validation messages.
+Every user action MUST provide immediate visual feedback. Audio feedback is optional and best-effort (especially on web, where autoplay/user-gesture policies can block playback). Game state MUST be clear at all times (current moves, solvability, win condition). Error states MUST be impossible through UI design rather than validation messages.
 
 **Rationale**: The 15 puzzle is a casual game—frustration from unclear states or missing feedback drives users away immediately.
 
@@ -59,9 +59,9 @@ Source code MUST remain readable and self-documenting. Complex logic MUST includ
 
 ### Asset Management
 
-- **Audio Files**: All sounds MUST be optimized for <100KB each
+- **Audio Files**: All sounds SHOULD be optimized for low latency and small size (target <100KB where practical)
 - **File Organization**: Assets MUST be organized in `assets/` with clear subdirectory structure
-- **Format Standards**: WAV for audio (cross-platform compatibility); PNG for future image assets
+- **Format Standards**: Prefer WAV for broad support; MP3 is permitted where it improves compatibility/performance. Avoid relying on per-action SFX on web if it harms responsiveness.
 
 ### Dependency Policy
 

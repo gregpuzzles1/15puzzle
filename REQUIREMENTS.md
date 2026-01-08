@@ -27,7 +27,8 @@ This project supports:
 
 ## Assets
 - Sound files in `assets/sounds/`:
-  - `tile_tick.wav` - Tile movement sound
+   - `tile_tick.wav` - Tile movement sound (present; currently not played)
+   - `tile_slide_tick.mp3` - Alternate tile movement sound (present; currently not played)
   - `new_game_chime.wav` - New game start sound
   - `game_win_fanfare.wav` - Win celebration sound
 
@@ -82,4 +83,6 @@ Platform-specific signing certificates and keys may be required:
 
 ## Notes
 - Audio features require device audio output capability
+- Web audio is subject to browser autoplay/user-gesture policies; some browsers may block sound unless initiated directly from a user action.
+- To avoid cross-browser latency and policy issues, tile-move/tick sound is currently disabled on all platforms; New Game and Win sounds remain best-effort.
 - Confetti animation uses Flutter's rendering engine (no additional GPU requirements)

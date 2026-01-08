@@ -81,7 +81,9 @@ Players see a minimal animated spinner while the game assets and Flutter web fra
 - **FR-001**: System MUST build the Flutter web version of the game automatically when code is pushed to the main branch only
 - **FR-002**: System MUST deploy the built web application to GitHub Pages at https://gregpuzzles1.github.io/15puzzle/
 - **FR-003**: Deployment workflow MUST complete within 10 minutes of code push
-- **FR-004**: Game MUST retain all existing functionality (tile sliding, move counter, shuffle, new game, win detection, audio feedback)
+- **FR-004**: Game MUST retain all existing gameplay functionality (tile sliding, move counter, shuffle, new game, win detection)
+- **FR-004a**: Game MUST provide best-effort audio feedback for New Game and Win events
+- **FR-004b**: Tile-move/tick audio MUST be disabled to avoid cross-browser autoplay/latency issues
 - **FR-005**: Game layout MUST adapt to desktop screens (≥1024px width), tablet screens (768px-1023px width), and smartphone screens (<768px width)
 - **FR-006**: Touch targets on mobile devices MUST be at least 44×44 pixels for comfortable tapping
 - **FR-007**: Game MUST display a minimal animated spinner from initial page load until the game is interactive
@@ -93,6 +95,9 @@ Players see a minimal animated spinner while the game assets and Flutter web fra
 - **FR-013**: Deployed site MUST use the correct base path for assets and resources (/15puzzle/)
 - **FR-014**: Deployment workflow MUST automatically retry failed deployments up to 3 times before reporting final failure
 - **FR-015**: Deployment status (success or failure) MUST be visible in the GitHub Actions tab without requiring external notification services
+- **FR-016**: Site MUST include SEO metadata in `web/index.html` (title, description, keywords, viewport)
+- **FR-017**: Site MUST include a Google tag (gtag.js) in `web/index.html` for analytics
+- **FR-018**: Site MUST publish `sitemap.xml` and `robots.txt` at the GitHub Pages root
 
 ### Non-Functional Requirements
 
@@ -102,6 +107,7 @@ Players see a minimal animated spinner while the game assets and Flutter web fra
 - **NFR-004**: Deployment process MUST be fully automated without manual intervention
 - **NFR-005**: GitHub Actions workflow MUST fail clearly if build or deployment errors occur after 3 automatic retry attempts
 - **NFR-006**: All existing game features MUST perform at 60fps on web platform
+- **NFR-007**: Audio playback MUST NOT block UI interactions; failures must degrade silently (no crashes)
 
 ### Configuration Requirements
 
@@ -130,7 +136,7 @@ Players see a minimal animated spinner while the game assets and Flutter web fra
 - Feature branches will be merged to main before deployment (no branch previews)
 - Flutter web build outputs are compatible with GitHub Pages static hosting
 - Users have modern browsers (Chrome, Firefox, Safari, Edge from last 2 years)
-- Audio playback may have limitations on mobile web (browser autoplay policies) - acceptable degradation
+- Audio playback is best-effort and may be blocked by browsers unless initiated by a user gesture - acceptable degradation
 - Confetti animations may perform differently on low-end mobile devices - acceptable if game remains playable
 - Base path `/15puzzle/` is correctly configured for the specific repository structure
 
@@ -143,8 +149,7 @@ Players see a minimal animated spinner while the game assets and Flutter web fra
 - Social sharing features
 - Leaderboards or score tracking across sessions
 - Internationalization or multiple languages
-- SEO optimization beyond basic meta tags
-- Analytics or usage tracking
+- SEO work beyond basic meta tags
 - External deployment notification services (email, Slack, Discord)
 - Mobile app store deployment (iOS/Android native apps)
 - Accessibility enhancements beyond responsive design
