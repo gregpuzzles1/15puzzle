@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gregpuzzles1.github.io/15puzzle/sitemap.xml
