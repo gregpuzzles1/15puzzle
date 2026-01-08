@@ -37,6 +37,13 @@ class WebAudioManager implements AudioManager {
 
     return isAppleWebKit && isSafari && !(isChrome || isFirefox || isEdge);
   }
+
+  bool get _isChromium {
+    final ua = html.window.navigator.userAgent;
+    final isChrome = ua.contains('Chrome') || ua.contains('CriOS');
+    final isEdge = ua.contains('Edg') || ua.contains('EdgiOS');
+    return isChrome || isEdge;
+  }
   
   // Preload these sounds during initialization
   static const _soundsToPreload = [
@@ -56,6 +63,7 @@ class WebAudioManager implements AudioManager {
     // Pre-create pools for the tick sound.
     // Some Chromium builds appear picky about MP3 (or GitHub Pages mime-type),
     // so we keep a WAV fallback to avoid total silence.
+    _forceWavTick = _isChromium;
     for (int i = 0; i < _tickPoolSize; i++) {
       _tickPoolMp3.add(
         _createAudio(_tickSoundAssetMp3, playbackRate: _tickPlaybackRate),
