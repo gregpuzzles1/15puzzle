@@ -44,6 +44,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
   late final AudioPlayer _player;
   late final AudioPlayer _winPlayer;
   bool _isPlayingSound = false;
+  bool _audioInitialized = false;
   static const String _moveSound = 'sounds/tile_tick.wav';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
   static const String _winSound = 'sounds/game_win_fanfare.wav';
@@ -156,8 +157,35 @@ class _PuzzleGameState extends State<PuzzleGame> {
     }
   }
 
+  /// Initialize audio on first user interaction (required for iOS/Safari)
+  Future<void> _initializeAudio() async {
+    if (_audioInitialized) return;
+    
+    try {
+      // Initialize audio context for web/Safari
+      initAudioContext();
+      
+      // Preload sounds by playing them at zero volume
+      await _player.setVolume(0.0);
+      await _player.play(AssetSource(_moveSound));
+      await Future.delayed(const Duration(milliseconds: 50));
+      await _player.stop();
+      await _player.setVolume(1.0);
+      
+      _audioInitialized = true;
+      debugPrint('Audio initialized successfully');
+    } catch (e) {
+      debugPrint('Audio initialization error: $e');
+    }
+  }
+
   Future<void> _playSound(String asset) async {
     if (_isPlayingSound) return; // Skip if already playing
+    
+    // Initialize audio on first play attempt
+    if (!_audioInitialized) {
+      await _initializeAudio();
+    }
     
     try {
       _isPlayingSound = true;
@@ -228,6 +256,11 @@ class _PuzzleGameState extends State<PuzzleGame> {
     bool playSound = true,
   }) {
     if (_getValidMoves().contains(index)) {
+      // Initialize audio on first tap (iOS/Safari requirement)
+      if (!_audioInitialized) {
+        _initializeAudio();
+      }
+      
       setState(() {
         tiles[emptyIndex] = tiles[index];
         tiles[index] = 0;
