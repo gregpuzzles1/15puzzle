@@ -64636,15 +64636,20 @@ return B.c.aT(r,s)},
 $S:408}
 A.YT.prototype={}
 A.a3A.prototype={
-f3(a){var s=0,r=A.Y(t.H),q,p=this,o,n,m,l,k,j
+f3(a){var s=0,r=A.Y(t.H),q,p=this,o,n,m,l,k,j,i
 var $async$f3=A.Z(function(b,c){if(b===1)return A.V(c,r)
 for(;;)switch(s){case 0:if(p.c){s=1
-break}o=p.c=!0
+break}p.c=!0
 A.l5().$1("Web audio manager ready")
-for(n=p.d,m=p.e,l=0;l<6;++l){n.push(p.Dk("sounds/tile_slide_tick.mp3",1.2))
-m.push(p.Dk("sounds/tile_tick.wav",1.2))}for(k=0;k<4;++k){j=B.Cj[k]
-if(j!=="sounds/tile_slide_tick.mp3"?j==="sounds/tile_tick.wav":o)continue
-p.Eb(j)}case 1:return A.W(q,r)}})
+o=window.navigator.userAgent
+o.toString
+n=B.d.n(o,"Chrome")||B.d.n(o,"CriOS")
+m=B.d.n(o,"Edg")||B.d.n(o,"EdgiOS")
+p.r=n||m
+for(o=p.d,l=p.e,k=0;k<6;++k){o.push(p.Dk("sounds/tile_slide_tick.mp3",1.2))
+l.push(p.Dk("sounds/tile_tick.wav",1.2))}for(j=0;j<4;++j){i=B.Cj[j]
+if(i==="sounds/tile_slide_tick.mp3"||i==="sounds/tile_tick.wav")continue
+p.Eb(i)}case 1:return A.W(q,r)}})
 return A.X($async$f3,r)},
 Dk(a,b){var s=A.aeE(null)
 s.src=A.ahO().a7("assets/assets/"+a).j(0)
