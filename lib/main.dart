@@ -155,12 +155,12 @@ class _PuzzleGameState extends State<PuzzleGame> {
   void _playSound(String asset) {
     // Important for desktop browsers: audio playback must be initiated
     // synchronously from a user gesture (no awaiting).
-    if (!_audioReady) return;
+    if (!kIsWeb && !_audioReady) return;
     _audioManager.playSound(asset);
   }
 
   void _playWinSound(String asset) {
-    if (!_audioReady) return;
+    if (!kIsWeb && !_audioReady) return;
     _audioManager.playWinSound(asset);
   }
 
@@ -396,19 +396,19 @@ class _PuzzleGameState extends State<PuzzleGame> {
     return GestureDetector(
       // On iOS, using onTapDown makes the interaction feel snappier
       // (onTap fires on pointer-up).
-      onTap: isIOS ? null : () => _moveTile(index, playSound: !isWebNonSafari),
-      onTapDown: (details) {
-        if (isIOS) {
-          _moveTile(index);
-          return;
-        }
+      onTap: isIOS
+          ? null
+          : () {
+              // Chromium browsers can be strict about allowing audio only
+              // during a click/tap callback. Play the tick here on web.
+              if (isWebNonSafari && _getValidMoves().contains(index)) {
+                _playSound(_moveSound);
+              }
 
-        // Desktop web browsers often require audio to start from a direct
-        // pointer event. Trigger the tick here and skip it in _moveTile.
-        if (isWebNonSafari && _getValidMoves().contains(index)) {
-          _playSound(_moveSound);
-        }
-      },
+              // For web non-Safari we already played the tick above.
+              _moveTile(index, playSound: !isWebNonSafari);
+            },
+      onTapDown: isIOS ? (_) => _moveTile(index) : null,
       child: Container(
         decoration: BoxDecoration(
           color: tileNumber.isOdd ? Colors.green[200] : Colors.blue[500],
