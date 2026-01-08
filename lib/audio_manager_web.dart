@@ -22,6 +22,18 @@ class WebAudioManager implements AudioManager {
   static const double _tickPlaybackRate = 1.2;
   final List<html.AudioElement> _tickPool = <html.AudioElement>[];
   int _tickPoolIndex = 0;
+
+  bool get _isSafari {
+    final ua = html.window.navigator.userAgent;
+
+    final isAppleWebKit = ua.contains('AppleWebKit');
+    final isSafari = ua.contains('Safari');
+    final isChrome = ua.contains('Chrome') || ua.contains('CriOS');
+    final isFirefox = ua.contains('Firefox') || ua.contains('FxiOS');
+    final isEdge = ua.contains('Edg') || ua.contains('EdgiOS');
+
+    return isAppleWebKit && isSafari && !(isChrome || isFirefox || isEdge);
+  }
   
   // Preload these sounds during initialization
   static const _soundsToPreload = [
@@ -95,6 +107,9 @@ class WebAudioManager implements AudioManager {
   void playSound(String assetPath) {
     try {
       if (assetPath == _tickSoundAsset && _tickPool.isNotEmpty) {
+        // User request: no tile slide sound on Safari.
+        if (_isSafari) return;
+
         final audio = _tickPool[_tickPoolIndex];
         _tickPoolIndex = (_tickPoolIndex + 1) % _tickPool.length;
         audio.volume = 1.0;

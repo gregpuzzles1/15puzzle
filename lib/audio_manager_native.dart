@@ -73,11 +73,23 @@ class NativeAudioManager implements AudioManager {
   @override
   void playSound(String assetPath) {
     if (assetPath == _tickSoundAsset) {
+      // User request: no tile slide sound on iOS.
+      if (Platform.isIOS) return;
+
       // Fast path: avoid stop+play overhead; just rewind and resume.
       unawaited(() async {
         try {
           final player = _tickPlayers[_tickPlayerIndex];
           _tickPlayerIndex = (_tickPlayerIndex + 1) % _tickPlayers.length;
+
+          // On desktop backends, seek+resume can be flaky for MP3 sources.
+          // Use stop+play for reliability.
+          if (!(Platform.isAndroid || Platform.isIOS)) {
+            await player.stop();
+            await player.play(AssetSource(_tickSoundAsset));
+            return;
+          }
+
           await player.seek(Duration.zero);
           await player.resume();
         } catch (e) {
