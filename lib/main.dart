@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:confetti/confetti.dart';
-import 'audio_manager.dart'
-    if (dart.library.html) 'audio_manager_web.dart'
-    if (dart.library.io) 'audio_manager_native.dart';
+import 'audio_manager.dart';
 import 'web_utils_stub.dart'
     if (dart.library.html) 'web_utils.dart';
 

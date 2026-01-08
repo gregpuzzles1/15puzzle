@@ -3,9 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'audio_manager.dart';
 
-AudioManager _createWebAudioManager() => throw UnsupportedError(
-    'Web audio manager not available on native platforms');
-AudioManager _createNativeAudioManager() => NativeAudioManager();
+AudioManager createAudioManager() => NativeAudioManager();
 
 class NativeAudioManager implements AudioManager {
   late final AudioPlayer _player;

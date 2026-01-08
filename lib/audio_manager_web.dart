@@ -5,9 +5,7 @@ import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'audio_manager.dart';
 
-AudioManager _createWebAudioManager() => WebAudioManager();
-AudioManager _createNativeAudioManager() => throw UnsupportedError(
-    'Native audio manager not available on web');
+AudioManager createAudioManager() => WebAudioManager();
 
 class WebAudioManager implements AudioManager {
   final Map<String, html.AudioElement> _audioCache = {};
