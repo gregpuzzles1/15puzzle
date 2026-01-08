@@ -17,11 +17,14 @@ class WebAudioManager implements AudioManager {
   html.AudioElement? _currentSound;
   bool _initialized = false;
 
-  static const String _tickSoundAsset = 'sounds/tile_slide_tick.mp3';
+  static const String _tickSoundAssetMp3 = 'sounds/tile_slide_tick.mp3';
+  static const String _tickSoundAssetWav = 'sounds/tile_tick.wav';
   static const int _tickPoolSize = 6;
   static const double _tickPlaybackRate = 1.2;
-  final List<html.AudioElement> _tickPool = <html.AudioElement>[];
+  final List<html.AudioElement> _tickPoolMp3 = <html.AudioElement>[];
+  final List<html.AudioElement> _tickPoolWav = <html.AudioElement>[];
   int _tickPoolIndex = 0;
+  bool _forceWavTick = false;
 
   bool get _isSafari {
     final ua = html.window.navigator.userAgent;
@@ -38,6 +41,7 @@ class WebAudioManager implements AudioManager {
   // Preload these sounds during initialization
   static const _soundsToPreload = [
     'sounds/tile_slide_tick.mp3',
+    'sounds/tile_tick.wav',
     'sounds/new_game_chime.wav',
     'sounds/game_win_fanfare.wav',
   ];
@@ -49,14 +53,21 @@ class WebAudioManager implements AudioManager {
     
     debugPrint('Web audio manager ready');
 
-    // Pre-create a small pool for the tick sound (reduces Safari latency).
+    // Pre-create pools for the tick sound.
+    // Some Chromium builds appear picky about MP3 (or GitHub Pages mime-type),
+    // so we keep a WAV fallback to avoid total silence.
     for (int i = 0; i < _tickPoolSize; i++) {
-      _tickPool.add(_createAudio(_tickSoundAsset, playbackRate: _tickPlaybackRate));
+      _tickPoolMp3.add(
+        _createAudio(_tickSoundAssetMp3, playbackRate: _tickPlaybackRate),
+      );
+      _tickPoolWav.add(
+        _createAudio(_tickSoundAssetWav, playbackRate: _tickPlaybackRate),
+      );
     }
 
     // Preload all other sounds using the shared cache.
     for (final sound in _soundsToPreload) {
-      if (sound == _tickSoundAsset) continue;
+      if (sound == _tickSoundAssetMp3 || sound == _tickSoundAssetWav) continue;
       _getOrCreateAudio(sound);
     }
   }
@@ -106,12 +117,15 @@ class WebAudioManager implements AudioManager {
   @override
   void playSound(String assetPath) {
     try {
-      if (assetPath == _tickSoundAsset && _tickPool.isNotEmpty) {
+      if (assetPath == _tickSoundAssetMp3 && _tickPoolMp3.isNotEmpty) {
         // User request: no tile slide sound on Safari.
         if (_isSafari) return;
 
-        final audio = _tickPool[_tickPoolIndex];
-        _tickPoolIndex = (_tickPoolIndex + 1) % _tickPool.length;
+        final pool = _forceWavTick ? _tickPoolWav : _tickPoolMp3;
+        if (pool.isEmpty) return;
+
+        final audio = pool[_tickPoolIndex];
+        _tickPoolIndex = (_tickPoolIndex + 1) % pool.length;
         audio.volume = 1.0;
         audio.playbackRate = _tickPlaybackRate;
         try {
@@ -119,7 +133,14 @@ class WebAudioManager implements AudioManager {
         } catch (_) {
           // Ignore if not seekable yet; still try to play.
         }
-        unawaited(audio.play());
+
+        audio.play().catchError((e) {
+          // If MP3 fails on Chromium, fall back to WAV.
+          if (!_forceWavTick) {
+            _forceWavTick = true;
+            debugPrint('⚠️ Tick MP3 failed; switching to WAV: $e');
+          }
+        });
         return;
       }
 
@@ -144,11 +165,17 @@ class WebAudioManager implements AudioManager {
   void dispose() {
     _currentSound?.pause();
 
-    for (final audio in _tickPool) {
+    for (final audio in _tickPoolMp3) {
       audio.pause();
       audio.src = '';
     }
-    _tickPool.clear();
+    _tickPoolMp3.clear();
+
+    for (final audio in _tickPoolWav) {
+      audio.pause();
+      audio.src = '';
+    }
+    _tickPoolWav.clear();
 
     for (final audio in _audioCache.values) {
       audio.pause();
