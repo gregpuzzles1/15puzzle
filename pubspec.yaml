@@ -66,6 +66,7 @@ flutter:
 
   assets:
     - assets/sounds/tile_tick.wav
+    - assets/sounds/tile_slide_tick.mp3
     - assets/sounds/new_game_chime.wav
     - assets/sounds/game_win_fanfare.wav
 

@@ -19,7 +19,7 @@ class NativeAudioManager implements AudioManager {
 
   late final AudioPlayer _winPlayer;
 
-  static const String _tickSoundAsset = 'sounds/tile_tick.wav';
+  static const String _tickSoundAsset = 'sounds/tile_slide_tick.mp3';
   static const double _iosTickPlaybackRate = 1.2;
 
   @override
@@ -33,8 +33,12 @@ class NativeAudioManager implements AudioManager {
     _sfxPlayer = AudioPlayer();
     _winPlayer = AudioPlayer();
 
+    final tickMode = (Platform.isIOS || Platform.isAndroid)
+        ? PlayerMode.lowLatency
+        : PlayerMode.mediaPlayer;
+
     for (final player in _tickPlayers) {
-      await player.setPlayerMode(PlayerMode.lowLatency);
+      await player.setPlayerMode(tickMode);
       await player.setReleaseMode(ReleaseMode.stop);
       await player.setVolume(1.0);
 
@@ -53,7 +57,10 @@ class NativeAudioManager implements AudioManager {
       }
     }
 
-    await _sfxPlayer.setPlayerMode(PlayerMode.lowLatency);
+    final sfxMode = (Platform.isIOS || Platform.isAndroid)
+      ? PlayerMode.lowLatency
+      : PlayerMode.mediaPlayer;
+    await _sfxPlayer.setPlayerMode(sfxMode);
     await _sfxPlayer.setReleaseMode(ReleaseMode.stop);
     await _sfxPlayer.setVolume(1.0);
 

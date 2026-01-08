@@ -44,7 +44,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
   // 🔊 Audio
   late final AudioManager _audioManager;
   late final Future<void> _audioInitFuture;
-  static const String _moveSound = 'sounds/tile_tick.wav';
+  static const String _moveSound = 'sounds/tile_slide_tick.mp3';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
   static const String _winSound = 'sounds/game_win_fanfare.wav';
 

@@ -17,7 +17,7 @@ class WebAudioManager implements AudioManager {
   html.AudioElement? _currentSound;
   bool _initialized = false;
 
-  static const String _tickSoundAsset = 'sounds/tile_tick.wav';
+  static const String _tickSoundAsset = 'sounds/tile_slide_tick.mp3';
   static const int _tickPoolSize = 6;
   static const double _tickPlaybackRate = 1.2;
   final List<html.AudioElement> _tickPool = <html.AudioElement>[];
@@ -25,7 +25,7 @@ class WebAudioManager implements AudioManager {
   
   // Preload these sounds during initialization
   static const _soundsToPreload = [
-    'sounds/tile_tick.wav',
+    'sounds/tile_slide_tick.mp3',
     'sounds/new_game_chime.wav',
     'sounds/game_win_fanfare.wav',
   ];
