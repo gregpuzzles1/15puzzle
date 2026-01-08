@@ -375,16 +375,6 @@ class _PuzzleGameState extends State<PuzzleGame> {
                   ElevatedButton(
                     onPressed: _isShuffling ? null : _shufflePuzzle,
                     child: const Text('New Game'),
-                  if (kDebugMode) ...[
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        debugPrint('🧪 Test button clicked');
-                        _playSound(_moveSound);
-                      },
-                      child: const Text('Test Sound'),
-                    ),
-                  ] child: const Text('Test Sound'),
                   ),
                 ],
               ),
