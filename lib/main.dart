@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:confetti/confetti.dart';
+import 'audio_manager.dart'
+    if (dart.library.html) 'audio_manager_web.dart'
+    if (dart.library.io) 'audio_manager_native.dart';
 import 'web_utils_stub.dart'
     if (dart.library.html) 'web_utils.dart';
 
@@ -41,9 +43,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
   bool _isShuffling = false;
 
   // 🔊 Audio
-  late final AudioPlayer _player;
-  late final AudioPlayer _winPlayer;
-  bool _isPlayingSound = false;
+  late final AudioManager _audioManager;
   bool _audioInitialized = false;
   static const String _moveSound = 'sounds/tile_tick.wav';
   static const String _newGameSound = 'sounds/new_game_chime.wav';
@@ -96,16 +96,8 @@ class _PuzzleGameState extends State<PuzzleGame> {
   void initState() {
     super.initState();
 
-    // Audio setup for short SFX
-    _player = AudioPlayer();
-    _player.setPlayerMode(PlayerMode.lowLatency);
-    _player.setReleaseMode(ReleaseMode.stop);
-    _player.setVolume(1.0);
-
-    // Separate player for win sound
-    _winPlayer = AudioPlayer();
-    _winPlayer.setReleaseMode(ReleaseMode.stop);
-    _winPlayer.setVolume(1.0);
+    // Audio setup
+    _audioManager = AudioManager();
 
     // Confetti init
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
@@ -122,8 +114,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
   @override
   void dispose() {
-    _player.dispose();
-    _winPlayer.dispose();
+    _audioManager.dispose();
     _confettiController.dispose();
     super.dispose();
   }
@@ -158,48 +149,20 @@ class _PuzzleGameState extends State<PuzzleGame> {
   }
 
   /// Initialize audio on first user interaction (required for iOS/Safari)
-  Future<void> _initializeAudio() async {
+  void _initializeAudio() {
     if (_audioInitialized) return;
     
-    try {
-      // Initialize audio context for web/Safari
-      initAudioContext();
-      
-      // Preload sounds by playing them at zero volume
-      await _player.setVolume(0.0);
-      await _player.play(AssetSource(_moveSound));
-      await Future.delayed(const Duration(milliseconds: 50));
-      await _player.stop();
-      await _player.setVolume(1.0);
-      
-      _audioInitialized = true;
-      debugPrint('Audio initialized successfully');
-    } catch (e) {
-      debugPrint('Audio initialization error: $e');
-    }
+    _audioManager.initialize();
+    _audioInitialized = true;
   }
 
-  Future<void> _playSound(String asset) async {
-    if (_isPlayingSound) return; // Skip if already playing
-    
+  void _playSound(String asset) {
     // Initialize audio on first play attempt
     if (!_audioInitialized) {
-      await _initializeAudio();
+      _initializeAudio();
     }
     
-    try {
-      _isPlayingSound = true;
-      await _player.stop();
-      await _player.play(AssetSource(asset));
-      
-      // Reset flag after a short delay
-      Future.delayed(const Duration(milliseconds: 50), () {
-        _isPlayingSound = false;
-      });
-    } catch (e) {
-      _isPlayingSound = false;
-      debugPrint('Audio error: $e');
-    }
+    _audioManager.playSound(asset);
   }
 
   void _initializeSolvedBoard(List<int> goal) {
@@ -292,13 +255,9 @@ class _PuzzleGameState extends State<PuzzleGame> {
     return false;
   }
 
-  void _handleWin() async {
+  void _handleWin() {
     _confettiController.play();
-    try {
-      await _winPlayer.play(AssetSource(_winSound));
-    } catch (e) {
-      debugPrint('Win audio error: $e');
-    }
+    _audioManager.playWinSound(_winSound);
     _showWinDialog();
   }
 
