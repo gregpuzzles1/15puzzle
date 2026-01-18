@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Contact · 15 Puzzle</title>
+  <meta name="description" content="Contact page for the 15 Puzzle project." />
+
+  <link rel="icon" type="image/png" href="../favicon.png" />
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: rgba(255, 255, 255, 0.08);
+      --text: rgba(255, 255, 255, 0.92);
+      --muted: rgba(255, 255, 255, 0.68);
+      --border: rgba(255, 255, 255, 0.14);
+      --link: #8ab4ff;
+      --accent: #66e3b4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 20%, rgba(102, 227, 180, 0.22), transparent 60%),
+        radial-gradient(900px 500px at 80% 0%, rgba(138, 180, 255, 0.18), transparent 55%),
+        radial-gradient(1200px 900px at 50% 100%, rgba(255, 255, 255, 0.06), transparent 55%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 32px 16px;
+    }
+
+    .container {
+      width: min(880px, 100%);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0 0 10px;
+      letter-spacing: 0.2px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .action {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 14px 12px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .action-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 650;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(102, 227, 180, 0.12);
+      flex: 0 0 auto;
+    }
+
+    .footer {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card" aria-label="Contact">
+      <h1>Contact</h1>
+      <p>
+        Want to report a bug, suggest a feature, or just say hi? The easiest way is through GitHub.
+      </p>
+
+      <div class="actions">
+        <div class="action">
+          <div class="action-title"><span class="dot" aria-hidden="true"></span>Email</div>
+          <p>
+            You can also reach me at:
+            <a class="mono" href="mailto:gregpuzzles1@gmail.com">gregpuzzles1@gmail.com</a>
+          </p>
+        </div>
+
+        <div class="action">
+          <div class="action-title"><span class="dot" aria-hidden="true"></span>Open an issue</div>
+          <p>
+            Use GitHub Issues for bugs and feature requests:
+            <a class="mono" href="https://github.com/gregpuzzles1/15puzzle/issues/new" target="_blank" rel="noopener noreferrer">
+              github.com/gregpuzzles1/15puzzle/issues/new
+            </a>
+          </p>
+        </div>
+
+        <div class="action">
+          <div class="action-title"><span class="dot" aria-hidden="true"></span>View the repo</div>
+          <p>
+            Browse the source code:
+            <a class="mono" href="https://github.com/gregpuzzles1/15puzzle" target="_blank" rel="noopener noreferrer">
+              github.com/gregpuzzles1/15puzzle
+            </a>
+          </p>
+        </div>
+
+        <div class="action">
+          <div class="action-title"><span class="dot" aria-hidden="true"></span>GitHub profile</div>
+          <p>
+            Follow along for more puzzles:
+            <a class="mono" href="https://github.com/gregpuzzles1" target="_blank" rel="noopener noreferrer">
+              github.com/gregpuzzles1
+            </a>
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span class="pill">
+          <span>© 2026 Greg Christian</span>
+          <span aria-hidden="true">·</span>
+          <a href="https://github.com/gregpuzzles1/15puzzle/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+        </span>
+
+        <span class="pill">
+          <a href="../" aria-label="Back to the 15 Puzzle game">← Back to the game</a>
+        </span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
