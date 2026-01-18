@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'audio_manager.dart';
@@ -38,6 +39,10 @@ class _PuzzleGameState extends State<PuzzleGame> {
   List<int> tiles = [];
   int emptyIndex = 15;
   int moves = 0;
+
+  static const String _repoUrl = 'https://github.com/gregpuzzles1/15puzzle';
+  static const String _licenseUrl = 'https://github.com/gregpuzzles1/15puzzle/blob/main/LICENSE';
+  static const String _contactUrl = 'https://gregpuzzles1.github.io/15puzzle/contact/';
 
   bool _isShuffling = false;
 
@@ -317,6 +322,99 @@ class _PuzzleGameState extends State<PuzzleGame> {
     );
   }
 
+  Future<void> _handleExternalLinkTap(String url) async {
+    final opened = openExternalUrl(url);
+    if (opened) return;
+
+    await Clipboard.setData(ClipboardData(text: url));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Link copied to clipboard')),
+    );
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    final textStyle = Theme.of(context).textTheme.bodySmall;
+    final linkStyle = textStyle?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      decoration: TextDecoration.underline,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          Text('© 2026 Greg Christian ·', style: textStyle),
+          InkWell(
+            onTap: () => _handleExternalLinkTap(_licenseUrl),
+            child: Text('MIT License', style: linkStyle),
+          ),
+          Text('·', style: textStyle),
+          InkWell(
+            onTap: () => _handleExternalLinkTap(_repoUrl),
+            child: Text('GitHub', style: linkStyle),
+          ),
+          Text('·', style: textStyle),
+          InkWell(
+            onTap: () => _handleExternalLinkTap(_contactUrl),
+            child: Text('Contact', style: linkStyle),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoSections(BuildContext context) {
+    final headingStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        );
+    final bodyStyle = Theme.of(context).textTheme.bodyLarge?.copyWith(
+          height: 1.4,
+        );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              Text('How to play', style: headingStyle),
+              const SizedBox(height: 8),
+              Text(
+                'The goal is to slide the numbered tiles until they are in order from 1 to 15, with the empty space in the bottom-right corner. Tap a tile next to the empty space to move it into the gap.',
+                style: bodyStyle,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Try to solve the puzzle in as few moves as possible. If you get stuck, press “New Game” to reshuffle and start fresh.',
+                style: bodyStyle,
+              ),
+              const SizedBox(height: 20),
+              Text('A bit of history', style: headingStyle),
+              const SizedBox(height: 8),
+              Text(
+                'The 15 puzzle is a classic sliding puzzle from the late 1800s. It became a worldwide craze when people challenged friends and family to restore the tiles to the correct order after scrambling them.',
+                style: bodyStyle,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Today it’s still popular as a quick logic game and a great example of how simple rules can create surprisingly deep challenges — including the fact that only certain scrambled positions are solvable.',
+                style: bodyStyle,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -340,7 +438,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 24),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SizedBox.square(
                 dimension: getBoardSize(context),
@@ -369,6 +467,9 @@ class _PuzzleGameState extends State<PuzzleGame> {
                   ),
                 ],
               ),
+              _buildInfoSections(context),
+              const SizedBox(height: 12),
+              _buildFooter(context),
             ],
           ),
         ),

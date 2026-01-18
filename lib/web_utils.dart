@@ -7,6 +7,12 @@ void removeLoadingSpinner() {
   html.document.querySelector('#loading')?.remove();
 }
 
+bool openExternalUrl(String url) {
+  // Open in a new tab/window on web.
+  html.window.open(url, '_blank');
+  return true;
+}
+
 bool isSafariBrowser() {
   final ua = html.window.navigator.userAgent;
 

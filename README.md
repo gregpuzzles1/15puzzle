@@ -29,11 +29,21 @@ The 15 puzzle is a sliding puzzle with 15 numbered tiles in a 4×4 grid with one
 
 ## How to Play
 
+The goal is to slide the numbered tiles until they are in order from 1 to 15, with the empty space in the bottom-right corner. Click or tap a tile next to the empty space to move it into the gap.
+
+Try to solve the puzzle in as few moves as possible. If you get stuck, press **"New Game"** to reshuffle and start fresh.
+
 - The puzzle starts in a shuffled state with tiles numbered 1–15  
 - Tap any tile adjacent to the empty space to slide it  
 - Continue sliding tiles until they are arranged in order from 1–15  
 - The puzzle is solved when all tiles are in numerical order with the empty space in the bottom-right corner  
 - Click **"New Game"** to start over with a new shuffle  
+
+## A Bit of History
+
+The 15 puzzle is a classic sliding puzzle from the late 1800s. It became a worldwide craze when people challenged friends and family to restore the tiles to the correct order after scrambling them.
+
+Today it’s still popular as a quick logic game and a great example of how simple rules can create surprisingly deep challenges — including the fact that only certain scrambled positions are solvable.
 
 ## Getting Started
 
