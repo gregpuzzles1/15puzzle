@@ -183,7 +183,7 @@
       </div>
 
       <div class="footer" aria-label="Footer">
-        <span>© 2026 Greg Christian · </span>
+        <span id="copyright">© 2025-2026 Greg Christian · </span>
         <a href="https://github.com/gregpuzzles1/15puzzle/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
         <span> · </span>
         <a href="https://github.com/gregpuzzles1/15puzzle" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -192,5 +192,15 @@
       </div>
     </section>
   </main>
+
+  <script>
+    (function () {
+      var startYear = 2025;
+      var currentYear = new Date().getFullYear();
+      var yearText = currentYear <= startYear ? String(startYear) : (startYear + '-' + currentYear);
+      var el = document.getElementById('copyright');
+      if (el) el.textContent = '© ' + yearText + ' Greg Christian · ';
+    })();
+  </script>
 </body>
 </html>

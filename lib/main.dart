@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'audio_manager.dart';
@@ -11,11 +12,20 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isDarkMode = false;
+
+  @override
   Widget build(BuildContext context) {
+    final themeMode = _isDarkMode ? ThemeMode.dark : ThemeMode.light;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: '15 Puzzle',
@@ -23,13 +33,35 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const PuzzleGame(),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+      themeMode: themeMode,
+      home: PuzzleGame(
+        isDarkMode: _isDarkMode,
+        onDarkModeChanged: (value) {
+          setState(() {
+            _isDarkMode = value;
+          });
+        },
+      ),
     );
   }
 }
 
 class PuzzleGame extends StatefulWidget {
-  const PuzzleGame({super.key});
+  const PuzzleGame({
+    super.key,
+    required this.isDarkMode,
+    required this.onDarkModeChanged,
+  });
+
+  final bool isDarkMode;
+  final ValueChanged<bool> onDarkModeChanged;
 
   @override
   State<PuzzleGame> createState() => _PuzzleGameState();
@@ -39,6 +71,15 @@ class _PuzzleGameState extends State<PuzzleGame> {
   List<int> tiles = [];
   int emptyIndex = 15;
   int moves = 0;
+
+  // ⏱️ Timer
+  final Stopwatch _stopwatch = Stopwatch();
+  Timer? _timerTicker;
+  Duration _elapsed = Duration.zero;
+  Duration? _finalElapsed;
+  bool _hasStartedTimer = false;
+  bool _isPaused = false;
+  bool _isGameOver = false;
 
   final ScrollController _scrollController = ScrollController();
   final FocusNode _pageFocusNode = FocusNode(debugLabel: 'PuzzlePageFocus');
@@ -125,11 +166,108 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
   @override
   void dispose() {
+    _timerTicker?.cancel();
     _audioManager.dispose();
     _confettiController.dispose();
     _scrollController.dispose();
     _pageFocusNode.dispose();
     super.dispose();
+  }
+
+  String _formatElapsed(Duration duration) {
+    final totalSeconds = duration.inSeconds;
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+
+    String two(int n) => n.toString().padLeft(2, '0');
+    if (hours > 0) {
+      return '${two(hours)}:${two(minutes)}:${two(seconds)}';
+    }
+    return '${two(minutes)}:${two(seconds)}';
+  }
+
+  void _armTimer() {
+    _timerTicker?.cancel();
+    _stopwatch
+      ..stop()
+      ..reset();
+
+    setState(() {
+      _elapsed = Duration.zero;
+      _finalElapsed = null;
+      _hasStartedTimer = true;
+      _isPaused = false;
+      _isGameOver = false;
+    });
+  }
+
+  void _beginTimerIfNeeded() {
+    if (!_hasStartedTimer || _isPaused || _isGameOver || _isShuffling) return;
+    if (_stopwatch.isRunning) return;
+
+    _stopwatch.start();
+    _timerTicker?.cancel();
+    _timerTicker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) {
+        _timerTicker?.cancel();
+        return;
+      }
+
+      if (!_stopwatch.isRunning) return;
+
+      setState(() {
+        _elapsed = _stopwatch.elapsed;
+      });
+    });
+  }
+
+  void _pauseTimer() {
+    if (!_hasStartedTimer || _isGameOver) return;
+    if (!_stopwatch.isRunning) return;
+
+    _stopwatch.stop();
+    _timerTicker?.cancel();
+    setState(() {
+      _elapsed = _stopwatch.elapsed;
+      _isPaused = true;
+    });
+  }
+
+  void _resumeTimer() {
+    if (!_hasStartedTimer || _isGameOver) return;
+    if (_stopwatch.isRunning) return;
+
+    _stopwatch.start();
+    setState(() {
+      _isPaused = false;
+    });
+
+    _timerTicker?.cancel();
+    _timerTicker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) {
+        _timerTicker?.cancel();
+        return;
+      }
+
+      if (!_stopwatch.isRunning) return;
+
+      setState(() {
+        _elapsed = _stopwatch.elapsed;
+      });
+    });
+  }
+
+  void _stopTimer() {
+    if (!_hasStartedTimer) return;
+    _stopwatch.stop();
+    _timerTicker?.cancel();
+    setState(() {
+      _elapsed = _stopwatch.elapsed;
+      _finalElapsed = _elapsed;
+      _isGameOver = true;
+      _isPaused = false;
+    });
   }
 
   void _scrollBy(double delta) {
@@ -219,6 +357,13 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
     setState(() => moves = 0);
     _isShuffling = false;
+
+    // Arm timer after shuffle completes; time starts on player's first move.
+    _armTimer();
+  }
+
+  void _startNewGame() {
+    _shufflePuzzle();
   }
 
   List<int> _getValidMoves() {
@@ -241,6 +386,9 @@ class _PuzzleGameState extends State<PuzzleGame> {
     bool playSound = true,
   }) {
     if (_getValidMoves().contains(index)) {
+      if (countMove) {
+        _beginTimerIfNeeded();
+      }
       setState(() {
         tiles[emptyIndex] = tiles[index];
         tiles[index] = 0;
@@ -271,6 +419,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
   }
 
   void _handleWin() {
+    _stopTimer();
     _confettiController.play();
     _playWinSound(_winSound);
     _showWinDialog();
@@ -307,6 +456,15 @@ class _PuzzleGameState extends State<PuzzleGame> {
                     color: Colors.blue,
                   ),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  'Time: ${_formatElapsed(_finalElapsed ?? _elapsed)}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
             actions: [
@@ -314,7 +472,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
                 onPressed: () {
                   _confettiController.stop();
                   Navigator.of(context).pop();
-                  _shufflePuzzle();
+                  _startNewGame();
                 },
                 child: const Text('Play Again', style: TextStyle(fontSize: 18)),
               ),
@@ -359,6 +517,12 @@ class _PuzzleGameState extends State<PuzzleGame> {
       decoration: TextDecoration.underline,
     );
 
+    const startYear = 2025;
+    final currentYear = DateTime.now().year;
+    final yearText = currentYear <= startYear
+        ? '$startYear'
+        : '$startYear-$currentYear';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Wrap(
@@ -367,7 +531,7 @@ class _PuzzleGameState extends State<PuzzleGame> {
         spacing: 6,
         runSpacing: 4,
         children: [
-          Text('© 2026 Greg Christian ·', style: textStyle),
+          Text('© $yearText Greg Christian ·', style: textStyle),
           InkWell(
             onTap: () => _handleExternalLinkTap(_licenseUrl),
             child: Text('MIT License', style: linkStyle),
@@ -439,15 +603,57 @@ class _PuzzleGameState extends State<PuzzleGame> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        centerTitle: true,
         title: const Text('15 Puzzle'),
+        leading: PopupMenuButton<void>(
+          tooltip: 'Settings',
+          icon: const Icon(Icons.settings),
+          itemBuilder: (context) => [
+            PopupMenuItem<void>(
+              enabled: false,
+              child: StatefulBuilder(
+                builder: (context, setMenuState) {
+                  var isDarkMode = widget.isDarkMode;
+
+                  void update(bool value) {
+                    setMenuState(() {
+                      isDarkMode = value;
+                    });
+                    widget.onDarkModeChanged(value);
+                  }
+
+                  return InkWell(
+                    onTap: () => update(!isDarkMode),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Dark mode',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        Switch(
+                          value: isDarkMode,
+                          onChanged: update,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
         actions: [
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Moves: $moves',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+              child: Text(
+                'Moves: $moves',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -494,29 +700,76 @@ class _PuzzleGameState extends State<PuzzleGame> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      SizedBox.square(
-                        dimension: getBoardSize(context),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: GridView.builder(
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 4,
-                              crossAxisSpacing: 4,
-                              mainAxisSpacing: 4,
+                      Builder(
+                        builder: (context) {
+                          final boardSize = getBoardSize(context);
+                          return SizedBox(
+                            width: boardSize,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: _buildTimerOverlay(context),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox.square(
+                                  dimension: boardSize,
+                                  child: Stack(
+                                    children: [
+                                      Positioned.fill(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: AbsorbPointer(
+                                            absorbing: _isPaused || _isGameOver,
+                                            child: GridView.builder(
+                                              physics: const NeverScrollableScrollPhysics(),
+                                              gridDelegate:
+                                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: 4,
+                                                crossAxisSpacing: 4,
+                                                mainAxisSpacing: 4,
+                                              ),
+                                              itemCount: 16,
+                                              itemBuilder: (context, index) =>
+                                                  _buildTile(index),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      if (_isPaused)
+                                        Positioned.fill(
+                                          child: IgnorePointer(
+                                            ignoring: true,
+                                            child: Container(
+                                              color: Colors.black.withValues(alpha: 0.15),
+                                              child: const Center(
+                                                child: Text(
+                                                  'Paused',
+                                                  style: TextStyle(
+                                                    fontSize: 28,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            itemCount: 16,
-                            itemBuilder: (context, index) => _buildTile(index),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           ElevatedButton(
-                            onPressed: _isShuffling ? null : _shufflePuzzle,
+                            onPressed: _isShuffling ? null : _startNewGame,
                             child: const Text('New Game'),
                           ),
                         ],
@@ -554,9 +807,15 @@ class _PuzzleGameState extends State<PuzzleGame> {
       onTap: isIOS
           ? null
           : () {
+              if (_isPaused || _isGameOver) return;
               _moveTile(index);
             },
-      onTapDown: isIOS ? (_) => _moveTile(index) : null,
+      onTapDown: isIOS
+          ? (_) {
+              if (_isPaused || _isGameOver) return;
+              _moveTile(index);
+            }
+          : null,
       child: Container(
         decoration: BoxDecoration(
           color: tileNumber.isOdd ? Colors.green[200] : Colors.blue[500],
@@ -581,6 +840,57 @@ class _PuzzleGameState extends State<PuzzleGame> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimerOverlay(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isRunning = _stopwatch.isRunning;
+    final canToggle =
+        _hasStartedTimer && !_isGameOver && !_isShuffling && (isRunning || _isPaused);
+
+    return Material(
+      elevation: 2,
+      color: colorScheme.surface.withValues(alpha: 0.92),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _formatElapsed(_elapsed),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: 6),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                tooltip: !_hasStartedTimer
+                  ? 'Press New Game to start'
+                  : (_isShuffling
+                    ? 'Shuffling…'
+                      : (!isRunning && !_isPaused)
+                        ? 'Make a move to start'
+                        : (isRunning ? 'Pause' : 'Resume')),
+              onPressed: canToggle
+                  ? () {
+                      if (isRunning) {
+                        _pauseTimer();
+                      } else {
+                        _resumeTimer();
+                      }
+                    }
+                  : null,
+              icon: Icon(isRunning ? Icons.pause : Icons.play_arrow),
+            ),
+          ],
         ),
       ),
     );
