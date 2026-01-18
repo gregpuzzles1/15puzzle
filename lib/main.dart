@@ -40,6 +40,9 @@ class _PuzzleGameState extends State<PuzzleGame> {
   int emptyIndex = 15;
   int moves = 0;
 
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _pageFocusNode = FocusNode(debugLabel: 'PuzzlePageFocus');
+
   static const String _repoUrl = 'https://github.com/gregpuzzles1/15puzzle';
   static const String _licenseUrl = 'https://github.com/gregpuzzles1/15puzzle/blob/main/LICENSE';
   static const String _contactUrl = 'https://gregpuzzles1.github.io/15puzzle/contact/';
@@ -124,7 +127,23 @@ class _PuzzleGameState extends State<PuzzleGame> {
   void dispose() {
     _audioManager.dispose();
     _confettiController.dispose();
+    _scrollController.dispose();
+    _pageFocusNode.dispose();
     super.dispose();
+  }
+
+  void _scrollBy(double delta) {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final target = (position.pixels + delta).clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      target.toDouble(),
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+    );
   }
 
   /// Calculate optimal board size based on viewport dimensions
@@ -434,43 +453,82 @@ class _PuzzleGameState extends State<PuzzleGame> {
           ),
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox.square(
-                dimension: getBoardSize(context),
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 4,
-                      mainAxisSpacing: 4,
-                    ),
-                    itemCount: 16,
-                    itemBuilder: (context, index) => _buildTile(index),
+      body: Shortcuts(
+        shortcuts: <ShortcutActivator, Intent>{
+          const SingleActivator(LogicalKeyboardKey.arrowDown): const ScrollIntent(direction: AxisDirection.down),
+          const SingleActivator(LogicalKeyboardKey.arrowUp): const ScrollIntent(direction: AxisDirection.up),
+          const SingleActivator(LogicalKeyboardKey.pageDown): const ScrollIntent(direction: AxisDirection.down),
+          const SingleActivator(LogicalKeyboardKey.pageUp): const ScrollIntent(direction: AxisDirection.up),
+        },
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            ScrollIntent: CallbackAction<ScrollIntent>(
+              onInvoke: (intent) {
+                final isPage = intent.direction == AxisDirection.down
+                        ? HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.pageDown)
+                        : HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.pageUp);
+
+                // Arrow: small nudge; PageUp/PageDown: larger jump.
+                final delta = intent.direction == AxisDirection.down
+                    ? (isPage ? 420.0 : 80.0)
+                    : (isPage ? -420.0 : -80.0);
+                _scrollBy(delta);
+                return null;
+              },
+            ),
+          },
+          child: Focus(
+            focusNode: _pageFocusNode,
+            autofocus: true,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                if (_pageFocusNode.canRequestFocus) {
+                  _pageFocusNode.requestFocus();
+                }
+              },
+              child: Center(
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox.square(
+                        dimension: getBoardSize(context),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: GridView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              crossAxisSpacing: 4,
+                              mainAxisSpacing: 4,
+                            ),
+                            itemCount: 16,
+                            itemBuilder: (context, index) => _buildTile(index),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _isShuffling ? null : _shufflePuzzle,
+                            child: const Text('New Game'),
+                          ),
+                        ],
+                      ),
+                      _buildInfoSections(context),
+                      const SizedBox(height: 12),
+                      _buildFooter(context),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: _isShuffling ? null : _shufflePuzzle,
-                    child: const Text('New Game'),
-                  ),
-                ],
-              ),
-              _buildInfoSections(context),
-              const SizedBox(height: 12),
-              _buildFooter(context),
-            ],
+            ),
           ),
         ),
       ),
