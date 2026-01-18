@@ -36,6 +36,7 @@
       display: grid;
       place-items: center;
       padding: 32px 16px;
+        overflow-x: hidden;
     }
 
     .container {
@@ -48,6 +49,7 @@
       border-radius: 16px;
       padding: 22px;
       backdrop-filter: blur(8px);
+      max-width: 100%;
     }
 
     h1 {
@@ -81,6 +83,8 @@
       border-radius: 14px;
       padding: 14px 14px 12px;
       background: rgba(255, 255, 255, 0.04);
+      max-width: 100%;
+      overflow-wrap: anywhere;
     }
 
     .action-title {
@@ -90,6 +94,7 @@
       font-weight: 650;
       color: var(--text);
       margin-bottom: 6px;
+      flex-wrap: wrap;
     }
 
     .dot {
@@ -118,6 +123,14 @@
     .mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: 0.95em;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 20px 12px; }
+      .card { padding: 18px; }
     }
   </style>
 </head>
