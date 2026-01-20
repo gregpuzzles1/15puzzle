@@ -32,7 +32,7 @@ description: "Task list for GitHub Pages deployment feature"
 
 - [ ] T001 Verify Flutter SDK version ≥3.10.0 and Dart ^3.10.0 are installed
 - [ ] T002 Verify repository is clean with no uncommitted changes on 001-github-pages branch
-- [ ] T003 [P] Create `.github/workflows/` directory structure for CI/CD workflows
+- [x] T003 [P] Create `.github/workflows/` directory structure for CI/CD workflows
 
 ---
 
@@ -44,8 +44,8 @@ description: "Task list for GitHub Pages deployment feature"
 
 - [ ] T004 Configure GitHub repository settings: enable GitHub Pages, set source to gh-pages branch
 - [ ] T005 Configure GitHub Actions permissions: enable "Read and write permissions" for workflows
-- [ ] T006 [P] Update pubspec.yaml to include web platform if not already present
-- [ ] T007 [P] Verify existing dependencies (audioplayers, confetti, cupertino_icons) are web-compatible
+- [x] T006 [P] Update pubspec.yaml to include web platform if not already present
+- [x] T007 [P] Verify existing dependencies (audioplayers, confetti, cupertino_icons) are web-compatible
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -61,22 +61,22 @@ description: "Task list for GitHub Pages deployment feature"
 
 > **NOTE: Write these tests FIRST, ensure they PASS locally before deployment**
 
-- [ ] T008 [P] [US1] Create test/web_compatibility_test.dart with basic game load test
-- [ ] T009 [P] [US1] Add widget test: verify game UI renders without errors on web
-- [ ] T010 [P] [US1] Add widget test: verify all 15 tiles are present in initial state
+- [x] T008 [P] [US1] Create `test/web_compatibility_test.dart` with basic game load test
+- [x] T009 [P] [US1] Add widget test: verify game UI renders without errors on web
+- [x] T010 [P] [US1] Add widget test: verify all 15 tiles are present in initial state
 - [ ] T011 [US1] Run `flutter test` locally to validate tests pass before deployment
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Create .github/workflows/deploy.yml workflow file with Flutter setup steps
-- [ ] T013 [US1] Add checkout step (actions/checkout@v4) to workflow
-- [ ] T014 [US1] Add Flutter setup step (subosito/flutter-action@v2) with version 3.10.x
-- [ ] T015 [US1] Add dependency installation step: `flutter pub get`
-- [ ] T016 [US1] Add test execution step: `flutter test` (runs widget tests)
-- [ ] T017 [US1] Add web build step: `flutter build web --release --base-href "/15puzzle/"`
-- [ ] T018 [US1] Add deployment step with retry wrapper (nick-invision/retry@v2, max 3 attempts)
-- [ ] T019 [US1] Configure deployment to push build/web/ contents to gh-pages branch
-- [ ] T020 [US1] Add workflow trigger: on push to main branch only
+- [x] T012 [US1] Create `.github/workflows/deploy.yml` workflow file with Flutter setup steps
+- [x] T013 [US1] Add checkout step (actions/checkout@v4) to workflow
+- [x] T014 [US1] Add Flutter setup step (subosito/flutter-action@v2) with stable Flutter (pinned to 3.38.2)
+- [x] T015 [US1] Add dependency installation step: `flutter pub get`
+- [x] T016 [US1] Add test execution step: `flutter test` (runs widget tests)
+- [x] T017 [US1] Add web build step: `flutter build web --release --base-href "/15puzzle/"`
+- [ ] T018 [US1] Add deployment step with retry wrapper (max 3 attempts) or document manual rerun procedure
+- [x] T019 [US1] Configure deployment to push `build/web/` contents to `gh-pages` branch (peaceiris/actions-gh-pages)
+- [x] T020 [US1] Add workflow trigger: on push to main branch only
 - [ ] T021 [US1] Commit workflow file and push to 001-github-pages branch
 - [ ] T022 [US1] Test workflow locally with `act` tool (optional) or push to test branch
 - [ ] T023 [US1] Merge 001-github-pages to main and monitor GitHub Actions workflow
@@ -97,20 +97,20 @@ description: "Task list for GitHub Pages deployment feature"
 
 > **NOTE: Write responsive tests BEFORE implementing layout changes**
 
-- [ ] T026 [P] [US2] Add widget test: verify layout adapts to iPhone SE viewport (375×667)
-- [ ] T027 [P] [US2] Add widget test: verify layout adapts to iPad viewport (768×1024)
-- [ ] T028 [P] [US2] Add widget test: verify layout adapts to desktop viewport (1920×1080)
-- [ ] T029 [P] [US2] Add widget test: verify no overflow errors on all viewport sizes
-- [ ] T030 [P] [US2] Add widget test: verify tile size ≥44×44px on mobile viewport
-- [ ] T031 [US2] Run `flutter test` to verify all responsive tests fail (TDD: red phase)
+- [x] T026 [P] [US2] Add widget test: verify layout adapts to iPhone SE viewport (375×667)
+- [x] T027 [P] [US2] Add widget test: verify layout adapts to iPad viewport (768×1024)
+- [x] T028 [P] [US2] Add widget test: verify layout adapts to desktop viewport (1920×1080)
+- [x] T029 [P] [US2] Add widget test: verify no overflow errors on all viewport sizes
+- [x] T030 [P] [US2] Add widget test: verify tile size ≥44×44px on mobile viewport
+- [ ] T031 [US2] Run `flutter test` to validate responsive tests locally
 
 ### Implementation for User Story 2
 
-- [ ] T032 [US2] Open lib/main.dart and locate `boardSize` constant (line ~38)
-- [ ] T033 [US2] Replace `static const double boardSize = 520` with `getBoardSize(BuildContext)` method
-- [ ] T034 [US2] Implement getBoardSize() with MediaQuery to calculate optimal board size
-- [ ] T035 [US2] Add breakpoint logic: ≥1024px → min(520, available), 768-1023px → min(480, available), <768px → min(available, 340)
-- [ ] T036 [US2] Update all boardSize references in build() method to call getBoardSize(context)
+- [x] T032 [US2] Implement responsive board sizing in `lib/main.dart` (no fixed board constant)
+- [x] T033 [US2] Provide `getBoardSize(BuildContext)` helper
+- [x] T034 [US2] Implement getBoardSize() with MediaQuery to calculate optimal board size
+- [x] T035 [US2] Add breakpoint logic and enforce minimum board size for touch targets
+- [x] T036 [US2] Use getBoardSize(context) for board rendering
 - [ ] T037 [US2] Test responsive behavior locally: `flutter run -d chrome` and resize window
 - [ ] T038 [US2] Verify tile sizes: mobile (340/4=85px), tablet (480/4=120px), desktop (520/4=130px) all ≥44px
 - [ ] T039 [US2] Run `flutter test` to verify responsive tests now pass (TDD: green phase)
@@ -134,25 +134,25 @@ description: "Task list for GitHub Pages deployment feature"
 
 > **NOTE: Write loading screen tests BEFORE implementing**
 
-- [ ] T045 [P] [US3] Add test to verify #loading div exists in web/index.html
-- [ ] T046 [P] [US3] Add test to verify loading spinner has correct inline styles (position: fixed, display: flex)
-- [ ] T047 [P] [US3] Add test to verify spinner animation CSS exists (@keyframes spin)
-- [ ] T048 [US3] Add manual test checklist: verify spinner visible on Slow 3G (Chrome DevTools Network tab)
+- [ ] T045 [P] [US3] (Optional) Add test to verify `#loading` div exists in `web/index.html`
+- [ ] T046 [P] [US3] (Optional) Add test to verify spinner CSS exists (positioning + animation)
+- [ ] T047 [P] [US3] (Optional) Add test to verify `@keyframes spin` is present
+- [ ] T048 [US3] Manual test: verify spinner visible on Slow 3G (Chrome DevTools Network tab)
 
 ### Implementation for User Story 3
 
-- [ ] T049 [US3] Open web/index.html and locate <body> tag
-- [ ] T050 [US3] Add loading spinner div with id="loading" immediately after <body> tag
-- [ ] T051 [US3] Add inline styles: position fixed, inset 0, display flex, align/justify center, white background
-- [ ] T052 [US3] Add nested div with class="spinner" for animated element
-- [ ] T053 [US3] Add <style> block with spinner CSS: 50px×50px, 4px border, #e0e0e0 base, #2196F3 top, border-radius 50%
-- [ ] T054 [US3] Add @keyframes spin animation: transform rotate(0 → 360deg), 1s linear infinite
-- [ ] T055 [US3] Add noscript fallback: display "This game requires JavaScript" message
-- [ ] T056 [US3] Add browser detection script: check for fetch, Promise, Symbol support
-- [ ] T057 [US3] If old browser detected, replace body with "Unsupported Browser" message
-- [ ] T058 [US3] Open lib/main.dart and add `import 'dart:html' as html;` at top (web-only import)
-- [ ] T059 [US3] In _PuzzleGameState.initState(), add SchedulerBinding.instance.addPostFrameCallback(() {...})
-- [ ] T060 [US3] Inside callback, call `html.document.querySelector('#loading')?.remove();`
+- [x] T049 [US3] Update `web/index.html` to include a loading spinner
+- [x] T050 [US3] Add loading spinner div with id="loading" immediately after <body> tag
+- [x] T051 [US3] Add inline CSS: fixed overlay + centered spinner
+- [x] T052 [US3] Add nested div with class="spinner" for animated element
+- [x] T053 [US3] Add spinner CSS (50×50, border, top color accent)
+- [x] T054 [US3] Add `@keyframes spin` animation
+- [x] T055 [US3] Add `<noscript>` fallback message
+- [x] T056 [US3] Add browser compatibility check via feature detection
+- [x] T057 [US3] Show "Unsupported Browser" message if checks fail
+- [x] T058 [US3] Implement spinner removal via conditional import helpers (`lib/web_utils.dart` + `lib/web_utils_stub.dart`)
+- [x] T059 [US3] Remove spinner after first frame in `_PuzzleGameState.initState()` using `WidgetsBinding.instance.addPostFrameCallback`
+- [x] T060 [US3] Remove `#loading` element in web implementation (`removeLoadingSpinner()`)
 - [ ] T061 [US3] Test locally: `flutter run -d chrome` and verify spinner appears briefly then disappears
 - [ ] T062 [US3] Test with throttling: Chrome DevTools → Network → Slow 3G → hard refresh (Ctrl+Shift+R)
 - [ ] T063 [US3] Verify spinner appears within 500ms and transitions smoothly when game loads
@@ -193,10 +193,10 @@ description: "Task list for GitHub Pages deployment feature"
 
 ## Addendum: Web Meta/SEO/Analytics Files
 
-- [ ] T087 Add SEO title/description/keywords/viewport in `web/index.html`
-- [ ] T088 Add Google tag (gtag.js) in `web/index.html`
-- [ ] T089 Add `web/sitemap.xml` for `https://gregpuzzles1.github.io/15puzzle/`
-- [ ] T090 Add `web/robots.txt` pointing to sitemap
+- [x] T087 Add SEO title/description/keywords/viewport in `web/index.html`
+- [x] T088 Add Google tag (gtag.js) in `web/index.html`
+- [x] T089 Add `web/sitemap.xml` for `https://gregpuzzles1.github.io/15puzzle/`
+- [x] T090 Add `web/robots.txt` pointing to sitemap
 
 ---
 

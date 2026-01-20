@@ -85,8 +85,8 @@ class _PuzzleGameState extends State<PuzzleGame> {
   final FocusNode _pageFocusNode = FocusNode(debugLabel: 'PuzzlePageFocus');
 
   static const String _repoUrl = 'https://github.com/gregpuzzles1/15puzzle';
+  static const String _issuesUrl = 'https://github.com/gregpuzzles1/15puzzle/issues';
   static const String _licenseUrl = 'https://github.com/gregpuzzles1/15puzzle/blob/main/LICENSE';
-  static const String _contactUrl = 'https://gregpuzzles1.github.io/15puzzle/contact/';
 
   bool _isShuffling = false;
 
@@ -517,6 +517,8 @@ class _PuzzleGameState extends State<PuzzleGame> {
       decoration: TextDecoration.underline,
     );
 
+    const emailAddress = 'gregpuzzles1@gmail.com';
+
     const startYear = 2025;
     final currentYear = DateTime.now().year;
     final yearText = currentYear <= startYear
@@ -532,9 +534,11 @@ class _PuzzleGameState extends State<PuzzleGame> {
         runSpacing: 4,
         children: [
           Text('© $yearText Greg Christian ·', style: textStyle),
+          Text('MIT License', style: textStyle),
+          Text('·', style: textStyle),
           InkWell(
-            onTap: () => _handleExternalLinkTap(_licenseUrl),
-            child: Text('MIT License', style: linkStyle),
+            onTap: () => _handleExternalLinkTap('mailto:$emailAddress'),
+            child: Text(emailAddress, style: linkStyle),
           ),
           Text('·', style: textStyle),
           InkWell(
@@ -543,8 +547,8 @@ class _PuzzleGameState extends State<PuzzleGame> {
           ),
           Text('·', style: textStyle),
           InkWell(
-            onTap: () => _handleExternalLinkTap(_contactUrl),
-            child: Text('Contact', style: linkStyle),
+            onTap: () => _handleExternalLinkTap(_issuesUrl),
+            child: Text('Open an Issue', style: linkStyle),
           ),
         ],
       ),

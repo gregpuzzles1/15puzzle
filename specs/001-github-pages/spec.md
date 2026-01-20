@@ -2,7 +2,8 @@
 
 **Feature Branch**: `001-github-pages`  
 **Created**: 2026-01-07  
-**Status**: Draft  
+**Last Updated**: 2026-01-18  
+**Status**: Implemented (with noted gaps)  
 **Input**: User description: "i want to build a website thru github pages using actions with this project. the address will be: https://gregpuzzles1.github.io/15puzzle/ site should be responsive for desktop, tablet, and smartphones. (if necessary) - should have a proper loading screen when the game is loading"
 
 ## Clarifications
@@ -78,26 +79,28 @@ Players see a minimal animated spinner while the game assets and Flutter web fra
 
 ### Functional Requirements
 
-- **FR-001**: System MUST build the Flutter web version of the game automatically when code is pushed to the main branch only
-- **FR-002**: System MUST deploy the built web application to GitHub Pages at https://gregpuzzles1.github.io/15puzzle/
-- **FR-003**: Deployment workflow MUST complete within 10 minutes of code push
-- **FR-004**: Game MUST retain all existing gameplay functionality (tile sliding, move counter, shuffle, new game, win detection)
-- **FR-004a**: Game MUST provide best-effort audio feedback for New Game and Win events
-- **FR-004b**: Tile-move/tick audio MUST be disabled to avoid cross-browser autoplay/latency issues
-- **FR-005**: Game layout MUST adapt to desktop screens (≥1024px width), tablet screens (768px-1023px width), and smartphone screens (<768px width)
-- **FR-006**: Touch targets on mobile devices MUST be at least 44×44 pixels for comfortable tapping
-- **FR-007**: Game MUST display a minimal animated spinner from initial page load until the game is interactive
-- **FR-008**: Spinner MUST appear within 500ms of page navigation
-- **FR-009**: Spinner MUST be a simple rotating indicator without text or progress percentage
-- **FR-010**: Spinner MUST transition smoothly to the game interface when loading completes
-- **FR-011**: Site MUST display an appropriate error message if JavaScript is disabled
-- **FR-012**: Site MUST detect and notify users if their browser is not supported
-- **FR-013**: Deployed site MUST use the correct base path for assets and resources (/15puzzle/)
-- **FR-014**: Deployment workflow MUST automatically retry failed deployments up to 3 times before reporting final failure
-- **FR-015**: Deployment status (success or failure) MUST be visible in the GitHub Actions tab without requiring external notification services
-- **FR-016**: Site MUST include SEO metadata in `web/index.html` (title, description, keywords, viewport)
-- **FR-017**: Site MUST include a Google tag (gtag.js) in `web/index.html` for analytics
-- **FR-018**: Site MUST publish `sitemap.xml` and `robots.txt` at the GitHub Pages root
+Implementation status is recorded inline as **(Done)** / **(Partial)** / **(Not implemented)**.
+
+- **FR-001**: System MUST build the Flutter web version of the game automatically when code is pushed to the main branch only **(Done)**
+- **FR-002**: System MUST deploy the built web application to GitHub Pages at https://gregpuzzles1.github.io/15puzzle/ **(Done)**
+- **FR-003**: Deployment workflow MUST complete within 10 minutes of code push **(Done; best-effort, depends on GitHub Actions runtime)**
+- **FR-004**: Game MUST retain all existing gameplay functionality (tile sliding, move counter, shuffle, new game, win detection) **(Done; plus additional features listed in Implementation Notes)**
+- **FR-004a**: Game MUST provide best-effort audio feedback for New Game and Win events **(Done)**
+- **FR-004b**: Tile-move/tick audio MUST be disabled to avoid cross-browser autoplay/latency issues **(Done; intentionally disabled)**
+- **FR-005**: Game layout MUST adapt to desktop screens (≥1024px width), tablet screens (768px-1023px width), and smartphone screens (<768px width) **(Done)**
+- **FR-006**: Touch targets on mobile devices MUST be at least 44×44 pixels for comfortable tapping **(Done; enforced via minimum board size)**
+- **FR-007**: Game MUST display a minimal animated spinner from initial page load until the game is interactive **(Done)**
+- **FR-008**: Spinner MUST appear within 500ms of page navigation **(Partial; implemented via inline HTML/CSS, timing depends on browser/cache/network)**
+- **FR-009**: Spinner MUST be a simple rotating indicator without text or progress percentage **(Done)**
+- **FR-010**: Spinner MUST transition smoothly to the game interface when loading completes **(Partial; spinner is removed once Flutter renders first frame, without a fade animation)**
+- **FR-011**: Site MUST display an appropriate error message if JavaScript is disabled **(Done; via <noscript>)**
+- **FR-012**: Site MUST detect and notify users if their browser is not supported **(Done; feature-detects Promise/fetch/Symbol)**
+- **FR-013**: Deployed site MUST use the correct base path for assets and resources (/15puzzle/) **(Done; workflow builds with --base-href "/15puzzle/")**
+- **FR-014**: Deployment workflow MUST automatically retry failed deployments up to 3 times before reporting final failure **(Not implemented; no retry wrapper in workflow)**
+- **FR-015**: Deployment status (success or failure) MUST be visible in the GitHub Actions tab without requiring external notification services **(Done)**
+- **FR-016**: Site MUST include SEO metadata in `web/index.html` (title, description, keywords, viewport) **(Done)**
+- **FR-017**: Site MUST include a Google tag (gtag.js) in `web/index.html` for analytics **(Done)**
+- **FR-018**: Site MUST publish `sitemap.xml` and `robots.txt` at the GitHub Pages root **(Done; in `web/` and deployed with the build output)**
 
 ### Non-Functional Requirements
 
@@ -108,6 +111,36 @@ Players see a minimal animated spinner while the game assets and Flutter web fra
 - **NFR-005**: GitHub Actions workflow MUST fail clearly if build or deployment errors occur after 3 automatic retry attempts
 - **NFR-006**: All existing game features MUST perform at 60fps on web platform
 - **NFR-007**: Audio playback MUST NOT block UI interactions; failures must degrade silently (no crashes)
+
+## Implementation Notes (As Built)
+
+### Deployment
+
+- GitHub Actions workflow is implemented in `.github/workflows/deploy.yml`.
+- Trigger: push to `main`.
+- Build: `flutter build web --release --base-href "/15puzzle/"`.
+- Deploy: publishes `build/web` to GitHub Pages using `peaceiris/actions-gh-pages`.
+- Retry behavior: not currently implemented; failures require rerun.
+
+### Responsive layout
+
+- Responsive board sizing is implemented in `lib/main.dart` via `getBoardSize(BuildContext)`.
+- Breakpoints match the spec intent: desktop (≥1024), tablet (≥768), mobile (<768).
+- Minimum size is enforced so tile touch targets stay ≥44×44.
+
+### Loading screen and web fallbacks
+
+- `web/index.html` renders an immediate inline spinner (`#loading` + `.spinner`).
+- Non-JS fallback: `<noscript>` message.
+- Basic unsupported browser fallback: feature detection for `Promise`, `fetch`, and `Symbol`.
+- Spinner removal: `removeLoadingSpinner()` is called after the first Flutter frame via conditional import (`lib/web_utils.dart` on web, stub elsewhere).
+
+### Gameplay (web parity)
+
+- Tile-move/tick sound is intentionally disabled across platforms.
+- New Game and Win sounds are best-effort.
+- Win celebration includes confetti animation.
+- Additional in-app features beyond the original web spec: timer with pause/resume, dark mode toggle, footer links (GitHub/License), keyboard-assisted page scrolling.
 
 ### Configuration Requirements
 
