@@ -126,6 +126,26 @@
     }
   </script>
 
+
+  <footer style="text-align:center; margin-top:32px; font-size:14px; color:#555;">
+    <p>
+      <span id="copyright">&copy; 2025-2026 Greg P. · MIT License</span><br>
+      <span>Email: </span><a href="mailto:gregpuzzles1@gmail.com">gregpuzzles1@gmail.com</a><br>
+      <a href="https://github.com/gregpuzzles1/15puzzle" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <span> · </span>
+      <a href="https://github.com/gregpuzzles1/15puzzle/issues" target="_blank" rel="noopener noreferrer">Open an Issue</a>
+    </p>
+  </footer>
+
+  <script>
+    (function () {
+      var startYear = 2025;
+      var currentYear = new Date().getFullYear();
+      var yearText = currentYear <= startYear ? String(startYear) : (startYear + '-' + currentYear);
+      var el = document.getElementById('copyright');
+      if (el) el.textContent = '© ' + yearText + ' Greg P. · MIT License';
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
