@@ -5,8 +5,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'audio_manager.dart';
-import 'web_utils_stub.dart'
-    if (dart.library.html) 'web_utils.dart';
+import 'web_utils_stub.dart' if (dart.library.html) 'web_utils.dart';
 
 void main() {
   runApp(const MyApp());
@@ -85,8 +84,10 @@ class _PuzzleGameState extends State<PuzzleGame> {
   final FocusNode _pageFocusNode = FocusNode(debugLabel: 'PuzzlePageFocus');
 
   static const String _repoUrl = 'https://github.com/gregpuzzles1/15puzzle';
-  static const String _issuesUrl = 'https://github.com/gregpuzzles1/15puzzle/issues';
-  static const String _licenseUrl = 'https://github.com/gregpuzzles1/15puzzle/blob/main/LICENSE';
+  static const String _issuesUrl =
+      'https://github.com/gregpuzzles1/15puzzle/issues';
+  static const String _licenseUrl =
+      'https://github.com/gregpuzzles1/15puzzle/blob/main/LICENSE';
 
   bool _isShuffling = false;
 
@@ -102,40 +103,112 @@ class _PuzzleGameState extends State<PuzzleGame> {
   // All acceptable solved layouts (0 = empty)
   static const List<List<int>> _goalBoards = [
     [
-      1, 2, 3, 4,
-      5, 6, 7, 8,
-      9, 10, 11, 12,
-      13, 14, 15, 0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      0,
     ],
     [
-      15, 14, 13, 12,
-      11, 10, 9, 8,
-      7, 6, 5, 4,
-      3, 2, 1, 0,
+      15,
+      14,
+      13,
+      12,
+      11,
+      10,
+      9,
+      8,
+      7,
+      6,
+      5,
+      4,
+      3,
+      2,
+      1,
+      0,
     ],
     [
-      1, 5, 9, 13,
-      2, 6, 10, 14,
-      3, 7, 11, 15,
-      4, 8, 12, 0,
+      1,
+      5,
+      9,
+      13,
+      2,
+      6,
+      10,
+      14,
+      3,
+      7,
+      11,
+      15,
+      4,
+      8,
+      12,
+      0,
     ],
     [
-      1, 3, 2, 4,
-      5, 7, 6, 8,
-      9, 11, 10, 12,
-      13, 15, 14, 0,
+      1,
+      3,
+      2,
+      4,
+      5,
+      7,
+      6,
+      8,
+      9,
+      11,
+      10,
+      12,
+      13,
+      15,
+      14,
+      0,
     ],
     [
-      1, 9, 2, 10,
-      3, 11, 4, 12,
-      5, 13, 6, 14,
-      7, 15, 8, 0,
+      1,
+      9,
+      2,
+      10,
+      3,
+      11,
+      4,
+      12,
+      5,
+      13,
+      6,
+      14,
+      7,
+      15,
+      8,
+      0,
     ],
     [
-      1, 4, 5, 8,
-      2, 3, 6, 7,
-      9, 10, 13, 14,
-      0, 11, 12, 15,
+      1,
+      4,
+      5,
+      8,
+      2,
+      3,
+      6,
+      7,
+      9,
+      10,
+      13,
+      14,
+      0,
+      11,
+      12,
+      15,
     ],
   ];
 
@@ -152,13 +225,14 @@ class _PuzzleGameState extends State<PuzzleGame> {
     });
 
     // Confetti init
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 3));
 
     _initializeSolvedBoard(_goalBoards.first);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _shufflePuzzle(playSound: false);
-      
+
       // Remove loading spinner after first frame (web only)
       removeLoadingSpinner();
     });
@@ -292,20 +366,24 @@ class _PuzzleGameState extends State<PuzzleGame> {
     final size = MediaQuery.of(context).size;
     final width = size.width;
     final height = size.height;
-    
+
     // Calculate available space (90% of smaller dimension, minus padding)
     final available = (width < height ? width : height) * 0.9 - 48;
-    
+
     // Minimum board size for 44px tiles accounting for GridView layout:
     // (44px tile * 4) + (4px spacing * 3 gaps) + (4px padding * 2 sides) = 196px
     const minBoardSize = 196.0;
-    
+
     if (width >= 1024) {
       // Desktop: prefer 520px, but adapt if screen is smaller
-      return available < 520 ? (available < minBoardSize ? minBoardSize : available) : 520;
+      return available < 520
+          ? (available < minBoardSize ? minBoardSize : available)
+          : 520;
     } else if (width >= 768) {
       // Tablet: prefer 480px, but adapt if screen is smaller
-      return available < 480 ? (available < minBoardSize ? minBoardSize : available) : 480;
+      return available < 480
+          ? (available < minBoardSize ? minBoardSize : available)
+          : 480;
     } else {
       // Mobile: use available space, max 340px, min 196px for touch targets
       if (available < minBoardSize) return minBoardSize;
@@ -521,9 +599,8 @@ class _PuzzleGameState extends State<PuzzleGame> {
 
     const startYear = 2025;
     final currentYear = DateTime.now().year;
-    final yearText = currentYear <= startYear
-        ? '$startYear'
-        : '$startYear-$currentYear';
+    final yearText =
+        currentYear <= startYear ? '$startYear' : '$startYear-$currentYear';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -534,7 +611,10 @@ class _PuzzleGameState extends State<PuzzleGame> {
         runSpacing: 4,
         children: [
           Text('© $yearText Greg Christian ·', style: textStyle),
-          Text('MIT License', style: textStyle),
+          InkWell(
+            onTap: () => _handleExternalLinkTap(_licenseUrl),
+            child: Text('MIT License', style: linkStyle),
+          ),
           Text('·', style: textStyle),
           InkWell(
             onTap: () => _handleExternalLinkTap('mailto:$emailAddress'),
@@ -630,10 +710,13 @@ class _PuzzleGameState extends State<PuzzleGame> {
                     onTap: () => update(!isDarkMode),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Dark mode',
-                            style: TextStyle(fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                         ),
                         Switch(
@@ -665,18 +748,24 @@ class _PuzzleGameState extends State<PuzzleGame> {
       ),
       body: Shortcuts(
         shortcuts: <ShortcutActivator, Intent>{
-          const SingleActivator(LogicalKeyboardKey.arrowDown): const ScrollIntent(direction: AxisDirection.down),
-          const SingleActivator(LogicalKeyboardKey.arrowUp): const ScrollIntent(direction: AxisDirection.up),
-          const SingleActivator(LogicalKeyboardKey.pageDown): const ScrollIntent(direction: AxisDirection.down),
-          const SingleActivator(LogicalKeyboardKey.pageUp): const ScrollIntent(direction: AxisDirection.up),
+          const SingleActivator(LogicalKeyboardKey.arrowDown):
+              const ScrollIntent(direction: AxisDirection.down),
+          const SingleActivator(LogicalKeyboardKey.arrowUp):
+              const ScrollIntent(direction: AxisDirection.up),
+          const SingleActivator(LogicalKeyboardKey.pageDown):
+              const ScrollIntent(direction: AxisDirection.down),
+          const SingleActivator(LogicalKeyboardKey.pageUp):
+              const ScrollIntent(direction: AxisDirection.up),
         },
         child: Actions(
           actions: <Type, Action<Intent>>{
             ScrollIntent: CallbackAction<ScrollIntent>(
               onInvoke: (intent) {
                 final isPage = intent.direction == AxisDirection.down
-                        ? HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.pageDown)
-                        : HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.pageUp);
+                    ? HardwareKeyboard.instance.logicalKeysPressed
+                        .contains(LogicalKeyboardKey.pageDown)
+                    : HardwareKeyboard.instance.logicalKeysPressed
+                        .contains(LogicalKeyboardKey.pageUp);
 
                 // Arrow: small nudge; PageUp/PageDown: larger jump.
                 final delta = intent.direction == AxisDirection.down
@@ -727,7 +816,8 @@ class _PuzzleGameState extends State<PuzzleGame> {
                                           child: AbsorbPointer(
                                             absorbing: _isPaused || _isGameOver,
                                             child: GridView.builder(
-                                              physics: const NeverScrollableScrollPhysics(),
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
                                               gridDelegate:
                                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                                 crossAxisCount: 4,
@@ -746,7 +836,8 @@ class _PuzzleGameState extends State<PuzzleGame> {
                                           child: IgnorePointer(
                                             ignoring: true,
                                             child: Container(
-                                              color: Colors.black.withValues(alpha: 0.15),
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.15),
                                               child: const Center(
                                                 child: Text(
                                                   'Paused',
@@ -852,8 +943,10 @@ class _PuzzleGameState extends State<PuzzleGame> {
   Widget _buildTimerOverlay(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isRunning = _stopwatch.isRunning;
-    final canToggle =
-        _hasStartedTimer && !_isGameOver && !_isShuffling && (isRunning || _isPaused);
+    final canToggle = _hasStartedTimer &&
+        !_isGameOver &&
+        !_isShuffling &&
+        (isRunning || _isPaused);
 
     return Material(
       elevation: 2,
@@ -876,13 +969,13 @@ class _PuzzleGameState extends State<PuzzleGame> {
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                tooltip: !_hasStartedTimer
+              tooltip: !_hasStartedTimer
                   ? 'Press New Game to start'
                   : (_isShuffling
-                    ? 'Shuffling…'
+                      ? 'Shuffling…'
                       : (!isRunning && !_isPaused)
-                        ? 'Make a move to start'
-                        : (isRunning ? 'Pause' : 'Resume')),
+                          ? 'Make a move to start'
+                          : (isRunning ? 'Pause' : 'Resume')),
               onPressed: canToggle
                   ? () {
                       if (isRunning) {
